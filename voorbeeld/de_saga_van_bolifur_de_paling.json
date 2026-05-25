@@ -1,0 +1,377 @@
+{
+  "title": "De Saga van Bolifur de Paling",
+  "author": "Anoniem",
+  "year": null,
+  "genre": "saga",
+  "writerStyle": "droge laconieke toon, korte puntige zinnen, zwarte humor, verhalende distantie, mythisch realisme, karakterpsychologie via actie",
+  "worldRules": "The story is set in a Norse Viking-age world, likely Iceland or Scandinavia, during a harsh pre-medieval period characterized by fjords, longhouses, muddy shores, and grey cold skies. Architecture consists of timber longhouses with thatched or turf roofs, open fire pits, and heavy wooden furniture. Characters wear rough-woven wool tunics, fur-lined cloaks, leather belts, and simple boots; clothing is functional and earth-toned — ochre, brown, charcoal, dark grey. The atmosphere is bleak, cold, and overcast, with mist rising from fjord waters and smoke curling from longhouse roofs. Technology is entirely pre-industrial: iron tools, wooden fishing nets, livestock, open boats. The visual mood combines gritty realism with quiet mythic weight — weathered faces, calloused hands, stone and mud underfoot.",
+  "chapters": [
+    {
+      "id": "ch1",
+      "title": "De val in de modder"
+    },
+    {
+      "id": "ch2",
+      "title": "Het vuur en de schande"
+    },
+    {
+      "id": "ch3",
+      "title": "De les van Ormur"
+    },
+    {
+      "id": "ch4",
+      "title": "Skúli Brekuson"
+    },
+    {
+      "id": "ch5",
+      "title": "Voor dag en dauw"
+    },
+    {
+      "id": "ch6",
+      "title": "De oefening"
+    },
+    {
+      "id": "ch7",
+      "title": "De vergadering"
+    },
+    {
+      "id": "ch8",
+      "title": "Þórr in het slijk"
+    },
+    {
+      "id": "ch9",
+      "title": "Ragn spreekt"
+    },
+    {
+      "id": "ch10",
+      "title": "De þing"
+    },
+    {
+      "id": "ch11",
+      "title": "De hólmganga"
+    },
+    {
+      "id": "ch12",
+      "title": "Chieftain"
+    },
+    {
+      "id": "ch13",
+      "title": "De paling"
+    }
+  ],
+  "paragraphs": [
+    {
+      "id": 1,
+      "chapter": "ch1",
+      "text": "Bolifur Haraldzson was ooit de sterkste man van zijn stam, de Grímsvölk. Zijn armen waren als eikenwormen, zijn schouders als een botsvlak. De mannen hadden hem gevreesd. De vrouwen ook, zij het om andere redenen."
+    },
+    {
+      "id": 2,
+      "chapter": "ch1",
+      "text": "Maar dat was vroeger."
+    },
+    {
+      "id": 3,
+      "chapter": "ch1",
+      "text": "Nu stond hij tot zijn knieën in het koude water van de fjord, een palingnet in zijn handen, een buikje onder zijn gordel dat al twee winters groeide. Hij trok. Het net zat vast onder een steen."
+    },
+    {
+      "id": 4,
+      "chapter": "ch1",
+      "text": "Hij trok harder."
+    },
+    {
+      "id": 5,
+      "chapter": "ch1",
+      "text": "Toen schoot er iets in zijn onderrug. Een geluid als een natte tak die breekt. Bolifur slaakte een kreet die de meeuwen deed opvliegen en zakte voorover, zijn gezicht gevaarlijk dicht bij het wateroppervlak."
+    },
+    {
+      "id": 6,
+      "chapter": "ch1",
+      "text": "Hij lag een uur in de modder voor hij zich kon bewegen. De paling zwom rustig onder hem door."
+    },
+    {
+      "id": 7,
+      "chapter": "ch2",
+      "text": "Die avond, bij het vuur, zat Bolifur krom als een oude vrouw. Zijn vrouw Hildís zette een beker mede naast hem en zei niets, wat erger was dan wat ze had kunnen zeggen."
+    },
+    {
+      "id": 8,
+      "chapter": "ch2",
+      "text": "De andere mannen aan de lange tafel lachten om iets anders, maar Bolifur wist dat het over hem ging. Of misschien wist hij dat niet. Misschien was het het ergste: dat hij het niet meer zeker wist."
+    },
+    {
+      "id": 9,
+      "chapter": "ch3",
+      "text": "Hij dacht aan Ormur Storolfsson."
+    },
+    {
+      "id": 10,
+      "chapter": "ch3",
+      "text": "Iedereen kende het verhaal. Ormur was de sterkste man van IJsland geweest, een reus die koeien optilde en boten verplaatste. Maar hij had zijn krachten willen bewijzen door de Háfurð te heffen — een balk zo zwaar dat geen mens hem kon dragen. En Ormur had hem geheven. Drie stappen. Daarna was er iets in zijn lijf geknapt, en hij was nooit meer dezelfde geweest."
+    },
+    {
+      "id": 11,
+      "chapter": "ch3",
+      "text": "De les die iedereen uit dat verhaal trok was: wees niet overmoedig. Bolifur had altijd gedacht dat dat de verkeerde les was."
+    },
+    {
+      "id": 12,
+      "chapter": "ch3",
+      "text": "De echte les, besloot hij nu, was: train zodat je klaar bent wanneer het telt. Niet erna."
+    },
+    {
+      "id": 13,
+      "chapter": "ch4",
+      "text": "De antagonist van Bolifurs stam heette Skúli Brekuson. Skúli was smal maar snel, met ogen als twee kille spijkers. Hij was geen vechter maar een talker — iemand die macht verzamelde door woorden in te ruilen voor gunsten en gunsten in te ruilen voor loyaliteit."
+    },
+    {
+      "id": 14,
+      "chapter": "ch4",
+      "text": "Al twee jaar fluisterde Skúli dat chieftain Ragn te oud was. Dat de Grímsvölk een nieuwe leider nodig hadden. Dat hijzelf toevallig beschikbaar was."
+    },
+    {
+      "id": 15,
+      "chapter": "ch4",
+      "text": "Niemand had hem tegengesproken. Bolifur al helemaal niet — hij had palingen gevangen."
+    },
+    {
+      "id": 16,
+      "chapter": "ch5",
+      "text": "De volgende ochtend stond Bolifur voor dag en dauw op. Zijn rug deed pijn. Hij strekte zich uit tot de pijn draaglijk was, en daarna een beetje verder."
+    },
+    {
+      "id": 17,
+      "chapter": "ch5",
+      "text": "Hij begon eenvoudig. Lopen. Stenen dragen. Zich optrekken aan de balk boven de staldeuren."
+    },
+    {
+      "id": 18,
+      "chapter": "ch5",
+      "text": "Hildís keek toe vanuit het raam en zei nog steeds niets."
+    },
+    {
+      "id": 19,
+      "chapter": "ch6",
+      "text": "Na een week hief hij zichzelf tien maal op aan de balk. Na twee weken twintig. Zijn rug klaagde maar bezweek niet."
+    },
+    {
+      "id": 20,
+      "chapter": "ch6",
+      "text": "Hij oefende anders dan vroeger. Niet de grote bewegingen van het slagveld — zwaarden en schilden en recht-op-je-vijand-af. Hij oefende klein en dichtbij. Ellebogen. Knieën. De manier waarop je iemand uit balans brengt voordat hij weet wat er gebeurt. Dingen die hij ooit had geleerd van een oude koopman uit het zuiden die beweerde dat hij had gevochten in steden zonder namen."
+    },
+    {
+      "id": 21,
+      "chapter": "ch6",
+      "text": "Die koopman had gezegd: een grote man valt harder. Maar een slimme man kiest wanneer hij valt."
+    },
+    {
+      "id": 22,
+      "chapter": "ch7",
+      "text": "Skúli hield zijn vergadering in het langhuis op een avond dat Bolifur er toevallig — of niet toevallig — ook was."
+    },
+    {
+      "id": 23,
+      "chapter": "ch7",
+      "text": "Skúli sprak over zwakheid. Over leiders die hun tijd gehad hadden. Zijn blik gleed even naar Bolifur."
+    },
+    {
+      "id": 24,
+      "chapter": "ch7",
+      "text": "Bolifur at zijn vlees en zei niets."
+    },
+    {
+      "id": 25,
+      "chapter": "ch8",
+      "text": "Maar na de vergadering wachtte Skúli's handlanger Þórr hem op buiten. Þórr was groot en onelegant, het soort man dat problemen oplost met zijn gewicht."
+    },
+    {
+      "id": 26,
+      "chapter": "ch8",
+      "text": "\"Skúli zegt dat je thuis moet blijven,\" zei Þórr. \"Bij je paling.\""
+    },
+    {
+      "id": 27,
+      "chapter": "ch8",
+      "text": "Bolifur keek hem aan. Þórr was een kop groter."
+    },
+    {
+      "id": 28,
+      "chapter": "ch8",
+      "text": "Wat er daarna gebeurde, duurde minder dan drie tellen. Þórr greep. Bolifur stapte opzij, trok het been weg, liet het gewicht zijn werk doen. Þórr lag in het slijk. Bolifur knielde naast hem en zei vriendelijk: \"Vertel Skúli dat ik zijn boodschap heb ontvangen.\""
+    },
+    {
+      "id": 29,
+      "chapter": "ch8",
+      "text": "Het nieuws reisde snel in een klein dorp."
+    },
+    {
+      "id": 30,
+      "chapter": "ch8",
+      "text": "Skúli lachte erom, publiekelijk. Maar zijn ogen deden niet mee."
+    },
+    {
+      "id": 31,
+      "chapter": "ch9",
+      "text": "Chieftain Ragn riep Bolifur bij zich. De oude man zat in zijn stoel als een boom die wacht op de volgende storm."
+    },
+    {
+      "id": 32,
+      "chapter": "ch9",
+      "text": "\"Skúli wil mijn plaats,\" zei Ragn."
+    },
+    {
+      "id": 33,
+      "chapter": "ch9",
+      "text": "\"Dat weet iedereen,\" zei Bolifur."
+    },
+    {
+      "id": 34,
+      "chapter": "ch9",
+      "text": "\"En jij?\""
+    },
+    {
+      "id": 35,
+      "chapter": "ch9",
+      "text": "Bolifur dacht aan Ormur, aan de balk, aan drie stappen. \"Ik wil geen macht,\" zei hij. \"Maar ik wil ook niet dat Skúli haar krijgt.\""
+    },
+    {
+      "id": 36,
+      "chapter": "ch9",
+      "text": "Ragn knikte langzaam. \"Dat is een begin.\""
+    },
+    {
+      "id": 37,
+      "chapter": "ch10",
+      "text": "De þing — de stamvergadering — werd bijeengeroepen toen Ragn aankondigde dat hij een opvolger wilde aanwijzen. Skúli verscheen in zijn beste mantel, omringd door mannen die hem gunsten verschuldigd waren."
+    },
+    {
+      "id": 38,
+      "chapter": "ch10",
+      "text": "Bolifur verscheen alleen, met Hildís naast hem."
+    },
+    {
+      "id": 39,
+      "chapter": "ch10",
+      "text": "Skúli sprak als altijd: glad, warm, overtuigend. Hij sprak over visie. Over een stam die groeide. Zijn mannen knikten op de juiste momenten."
+    },
+    {
+      "id": 40,
+      "chapter": "ch10",
+      "text": "Bolifur sprak kort. Hij sprak over de winter van drie jaar geleden, toen hij de veetrek had geleid door de sneeuw. Over de zomer daarvoor, de grensruzie die hij had beslecht zonder bloedvergieten. Over de mannen die nog leefden omdat hij de juiste keuzes had gemaakt."
+    },
+    {
+      "id": 41,
+      "chapter": "ch10",
+      "text": "Hij zei niet dat hij sterk was. Hij toonde het alleen in de manier waarop hij stond."
+    },
+    {
+      "id": 42,
+      "chapter": "ch11",
+      "text": "Skúli had één troef over. Hij daagde Bolifur uit voor een hólmganga — een tweekamp, eerlijk en formeel, op het eilandje in de fjord."
+    },
+    {
+      "id": 43,
+      "chapter": "ch11",
+      "text": "De stam keek naar Bolifur. Dit was het moment waarop een wijs man kon weigeren en een dwaas kon accepteren."
+    },
+    {
+      "id": 44,
+      "chapter": "ch11",
+      "text": "Bolifur accepteerde."
+    },
+    {
+      "id": 45,
+      "chapter": "ch11",
+      "text": "Skúli had een jonge vechter ingehuurd — iemand anders dus, want Skúli vocht zelf niet. Dat alleen al zei alles."
+    },
+    {
+      "id": 46,
+      "chapter": "ch11",
+      "text": "De vechter heette niemand wist het precies, en hij had lange armen en de blik van iemand die dit vaker had gedaan."
+    },
+    {
+      "id": 47,
+      "chapter": "ch11",
+      "text": "De hólmganga begon bij zonsopgang op het kiezeleilandje. De stam stond langs de oever."
+    },
+    {
+      "id": 48,
+      "chapter": "ch11",
+      "text": "De lange man bewoog snel. Te snel voor iemand die verwachtte dat Bolifur een logge oud-strijder was."
+    },
+    {
+      "id": 49,
+      "chapter": "ch11",
+      "text": "Maar Bolifur was geen logge oud-strijder meer."
+    },
+    {
+      "id": 50,
+      "chapter": "ch11",
+      "text": "Drie minuten. Niet meer. Bolifur gebruikte wat de koopman hem had geleerd: dichtbij blijven, het gewicht van de ander gebruiken, geduld. De lange man was sneller, maar snelheid mist ook. Kracht vermoeit. Bolifur wachtte."
+    },
+    {
+      "id": 51,
+      "chapter": "ch11",
+      "text": "Hij won niet met één grote klap. Hij won omdat de ander het opgaf."
+    },
+    {
+      "id": 52,
+      "chapter": "ch12",
+      "text": "Skúli verliet de þing zonder een woord. Zijn mannen verspreidden zich als mist bij wind."
+    },
+    {
+      "id": 53,
+      "chapter": "ch12",
+      "text": "Ragn legde zijn hand op Bolifurs schouder — zwaar, betekenisvol. \"Je bent chieftain van de Grímsvölk,\" zei hij. \"Probeer het niet te verpesten.\""
+    },
+    {
+      "id": 54,
+      "chapter": "ch12",
+      "text": "\"Ik zal het proberen,\" zei Bolifur."
+    },
+    {
+      "id": 55,
+      "chapter": "ch12",
+      "text": "Die avond zat hij bij het vuur, zijn rug recht — of zo recht als hij nog kon. Hildís schonk mede in."
+    },
+    {
+      "id": 56,
+      "chapter": "ch12",
+      "text": "\"Je had hem kunnen uitdagen bij de þing,\" zei ze. \"Zonder de tweekamp.\""
+    },
+    {
+      "id": 57,
+      "chapter": "ch12",
+      "text": "\"Misschien,\" zei Bolifur. \"Maar Ormur hief de balk pas toen hij hem kon tillen.\""
+    },
+    {
+      "id": 58,
+      "chapter": "ch12",
+      "text": "Hildís keek hem aan. \"Je vergelijkt jezelf met Ormur Storolfsson?\""
+    },
+    {
+      "id": 59,
+      "chapter": "ch12",
+      "text": "\"Nee,\" zei Bolifur. \"Ik leer van zijn fout.\""
+    },
+    {
+      "id": 60,
+      "chapter": "ch13",
+      "text": "De paling ving hij die herfst ook. Rustig, met geduld, zonder te trekken als het net vastzat."
+    },
+    {
+      "id": 61,
+      "chapter": "ch13",
+      "text": "Zijn rug hield het."
+    }
+  ],
+  "defaultStyle": {
+    "w1": 0.15,
+    "w2": 0.2,
+    "w3": 0.65,
+    "realism": 72
+  },
+  "id": "de_saga_van_bolifur_de_paling",
+  "sourceUrl": null
+}

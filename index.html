@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verplaatsing van elementen — F. Bordewijk</title>
+  <link rel="stylesheet" href="css/style.css?v=4">
+</head>
+<body>
+
+<!-- ── Header ──────────────────────────────────────────────────────────── -->
+<header>
+  <h1 id="header-story-sub">ode aan F. Bordewijk</h1>
+  <h2 id="header-story-title"><a href="https://www.dbnl.org/tekst/bord001stud01_01/bord001stud01_01_0005.php" target="_blank" rel="noopener">Verplaatsing van elementen (1956)</a></h2>
+  <span class="version-badge" id="app-version">v0.024</span>
+  <button id="btn-settings" title="Instellingen">⚙</button>
+</header>
+
+<!-- ── Vier kolommen ───────────────────────────────────────────────────── -->
+<main>
+
+  <!-- ── 0 · Verhaalbibliotheek ────────────────────────────────────────── -->
+  <section class="col-library" data-open="true">
+    <div class="col-header">
+      <span class="step-badge">0</span>
+      <div class="col-header-text">
+        <span class="col-title">Verhaal</span>
+        <span class="col-sub">Kies een verhaal</span>
+      </div>
+      <svg class="col-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="col-body">
+      <div id="story-library-list" class="story-library-list"></div>
+      <div class="library-footer">
+        <button id="btn-new-story" class="btn btn-sm library-new-btn">+ Nieuw verhaal</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 1 · Verhaal ──────────────────────────────────────────────────── -->
+  <section class="col-story" data-open="true">
+
+    <div class="col-header">
+      <span class="step-badge">1</span>
+      <div class="col-header-text">
+        <span class="col-title">Kies scènes</span>
+        <span class="col-sub">Lees &amp; markeer tekstfragmenten</span>
+      </div>
+      <svg class="col-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+
+    <div class="col-body">
+
+      <div class="search-bar">
+        <input type="search" id="search-input" placeholder="Zoek in het verhaal…" autocomplete="off">
+        <span id="search-count"></span>
+        <button id="search-prev" title="Vorig resultaat">▲</button>
+        <button id="search-next" title="Volgend resultaat">▼</button>
+        <button id="search-clear" title="Wis zoekopdracht">✕</button>
+      </div>
+
+      <div class="story-controls">
+        <label>
+          <input type="checkbox" id="toggle-para-nums" checked>
+          Toon §-nummers
+        </label>
+        <span class="story-hint">Klik §-nummer om te markeren · sleep voor reeks</span>
+      </div>
+
+      <div id="story-text" class="story-text"></div>
+
+      <div class="story-footer">
+        <span id="marks-footer-summary">Geen markeringen</span>
+        <button class="btn btn-sm" id="btn-clear-marks" title="Verwijder alle markeringen">Verwijder</button>
+      </div>
+
+    </div><!-- /col-body -->
+  </section>
+
+  <!-- ── 2 · Stijl & Modus ────────────────────────────────────────────── -->
+  <section class="col-style" data-open="false">
+
+    <div class="col-header">
+      <span class="step-badge">2</span>
+      <div class="col-header-text">
+        <span class="col-title">Bepaal stijl</span>
+        <span class="col-sub">Kunststroming, modus &amp; rendering-overlay</span>
+      </div>
+      <svg class="col-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+
+    <div class="col-body">
+
+      <!-- Modus -->
+      <div class="style-section">
+        <div class="section-label">Modus</div>
+        <div class="mode-selector">
+          <button class="mode-btn" data-mode="A">
+            <span class="mode-btn-label">Eén illustratie</span>
+            <span class="mode-btn-desc">Één dramatisch moment uit het verhaal</span>
+          </button>
+          <button class="mode-btn" data-mode="B">
+            <span class="mode-btn-label">Kleine reeks</span>
+            <span class="mode-btn-desc">3–5 scènes, automatisch of uit markeringen</span>
+          </button>
+          <button class="mode-btn" data-mode="C">
+            <span class="mode-btn-label">Grafische roman</span>
+            <span class="mode-btn-desc">1–18 panelen, elk één afbeelding</span>
+          </button>
+        </div>
+        <div id="b-count-row" style="display:none">
+          Aantal afbeeldingen:
+          <select id="b-count">
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4" selected>4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+          </select>
+        </div>
+        <div id="novel-count-row" style="display:none">
+          Aantal panels:
+          <select id="novel-count">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6" selected>6 — klassiek album</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9 — uitgebreid</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+            <option value="12">12</option>
+            <option value="18">18 — episch</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Stijldriehoek -->
+      <div class="style-section">
+        <div class="section-label">Stijlmix</div>
+        <div id="triangle-container"></div>
+      </div>
+
+      <!-- Uitvoering (5 stappen) -->
+      <div class="style-section">
+        <div class="section-label">Uitvoering</div>
+        <div class="realism-steps">
+          <input type="range" id="realism-slider" min="0" max="100" step="25" value="50">
+          <div class="realism-step-labels">
+            <span>Geïllustreerd</span>
+            <span>Gestileerd</span>
+            <span>Semi-realistisch</span>
+            <span>Realistisch</span>
+            <span>Fotorealistisch</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stripstijl-invloed -->
+      <div class="style-section">
+        <div class="section-label">Stripstijl-invloed</div>
+        <select id="strip-style-select">
+          <option value="">Geen (puur stijlmix)</option>
+          <optgroup label="Nederlandse strips">
+            <option value="swarte">Joost Swarte — NL ligne claire (satirisch)</option>
+            <option value="retera">Mark Retera — DirkJan (absurdistisch-minimaal)</option>
+          </optgroup>
+          <optgroup label="Belgisch / Frans">
+            <option value="ligne_claire">Ligne claire — Hergé / Tintin</option>
+            <option value="franquin">Franquin — Gaston Lagaffe</option>
+            <option value="moebius">Moebius / Jean Giraud</option>
+          </optgroup>
+          <optgroup label="Overig">
+            <option value="manga">Manga (One Piece / Oda)</option>
+            <option value="noir">Noir / Zwart-wit (Eisner)</option>
+            <option value="underground">Underground / Raw (Crumb)</option>
+          </optgroup>
+        </select>
+        <p style="font-size:10px;color:var(--text-muted);margin:4px 0 0;line-height:1.4">
+          Rendering-overlay bovenop de stijlmix — werkt voor elke combinatie van de driehoek.
+        </p>
+      </div>
+
+      <!-- Scèneselectie modus A -->
+      <div class="style-section" id="scene-sel-A">
+        <div class="section-label">Scèneselectie</div>
+        <div class="scene-radio-group">
+          <label class="scene-radio-label">
+            <input type="radio" name="scene-src-A" value="claude" checked>
+            Laat Claude het mooiste moment kiezen
+          </label>
+          <label class="scene-radio-label">
+            <input type="radio" name="scene-src-A" value="marks">
+            Gebruik mijn markering uit het verhaal
+          </label>
+          <label class="scene-radio-label">
+            <input type="radio" name="scene-src-A" value="random">
+            Willekeurige scène
+          </label>
+        </div>
+        <div class="marks-preview" id="marks-preview-A">Geen markeringen — klik op §-nummers.</div>
+      </div>
+
+      <!-- Scèneselectie modus B -->
+      <div class="style-section" id="scene-sel-B" style="display:none">
+        <div class="section-label">Scèneselectie</div>
+        <div class="scene-radio-group">
+          <label class="scene-radio-label">
+            <input type="radio" name="scene-src-B" value="claude" checked>
+            Laat Claude 3–5 scènes kiezen
+          </label>
+          <label class="scene-radio-label">
+            <input type="radio" name="scene-src-B" value="marks">
+            Gebruik mijn markeringen (elk §-nummer = één scène)
+          </label>
+          <label class="scene-radio-label">
+            <input type="radio" name="scene-src-B" value="random">
+            Willekeurige scènes
+          </label>
+        </div>
+        <div class="marks-preview" id="marks-preview-B">Geen markeringen — klik op §-nummers.</div>
+      </div>
+
+      <div class="style-section" id="scene-sel-C" style="display:none">
+        <div class="section-label">Scèneselectie</div>
+        <div class="scene-radio-group">
+          <label class="scene-radio-label">
+            <input type="radio" name="scene-src-C" value="claude" checked>
+            Vrij verdeeld over verhaal
+          </label>
+          <label class="scene-radio-label">
+            <input type="radio" name="scene-src-C" value="highlight">
+            Zoom in op het hoogtepunt
+          </label>
+          <label class="scene-radio-label">
+            <input type="radio" name="scene-src-C" value="marks">
+            Gebruik §-selectie (geen = volledig verhaal)
+          </label>
+        </div>
+        <div class="marks-preview" id="marks-preview-C">Geen selectie — volledig verhaal wordt gebruikt.</div>
+        <div class="marks-actions-C" id="marks-actions-C">
+          <button class="btn-sm" id="btn-select-all-C">Selecteer alle §</button>
+          <button class="btn-sm" id="btn-clear-marks-C">Verwijder selectie</button>
+        </div>
+      </div>
+
+      <!-- Tekstweergave-opties -->
+      <div class="style-section">
+        <div class="section-label">Tekstweergave</div>
+        <div class="text-opts-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="opt-caption">
+            Onderschrift onder afbeelding (citaat uit tekst)
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="opt-balloon">
+            Tekstballon in afbeelding <em style="color:var(--text-muted)">(experimenteel)</em>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="opt-sidetext">
+            Scènetekst naast afbeelding
+          </label>
+        </div>
+      </div>
+
+      <!-- Genereerknop -->
+      <div class="style-section">
+        <button id="btn-generate">Genereer</button>
+        <div class="cost-estimate" id="cost-estimate"></div>
+        <div class="generate-status" id="generate-status"></div>
+        <button id="btn-stop" style="display:none">■ Stop</button>
+        <button id="btn-test-styles" class="btn-style-test" title="Genereer dezelfde scène in Gouden Eeuw, Jugendstil·Déco en Magisch Realisme om stijlverschillen te vergelijken">Test stijlmix en uitvoering (3×)</button>
+        <button id="btn-test-stripstijl" class="btn-style-test" title="Genereer dezelfde scène 8× met elke stripstijl-invloed — neutrale stijlmix, uitvoering Geïllustreerd">Test stripstijl (8×)</button>
+      </div>
+
+      <!-- Debug-paneel -->
+      <div id="debug-toolbar">
+        <button id="debug-dl-btn" title="Download console-log als .txt">↓ Log downloaden</button>
+        <button id="debug-clear-btn" title="Leeg het log-paneel">✕ Wis log</button>
+      </div>
+      <div id="debug-panel"></div>
+
+    </div><!-- /col-body -->
+  </section>
+
+  <!-- ── 3 · Output ───────────────────────────────────────────────────── -->
+  <section class="col-output" data-open="false">
+
+    <div class="col-header">
+      <span class="step-badge">3</span>
+      <div class="col-header-text">
+        <span class="col-title">Resultaat</span>
+        <span class="col-sub">Gegenereerde afbeeldingen &amp; download</span>
+      </div>
+      <button class="btn-sm col-header-action" id="btn-clear-output" title="Wis alle afbeeldingen" style="flex-shrink:0;margin-right:6px">Wis alles</button>
+      <svg class="col-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+
+    <div class="col-body">
+      <div id="output-container"></div>
+    </div><!-- /col-body -->
+
+  </section>
+
+</main>
+
+<!-- ── Instellingen-modal ───────────────────────────────────────────────── -->
+<div class="modal-overlay hidden" id="modal-settings">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-title">Instellingen</span>
+      <button class="modal-close" id="modal-close">✕</button>
+    </div>
+    <div class="modal-tabs">
+      <button class="modal-tab active" data-tab="settings">Instellingen</button>
+      <button class="modal-tab" data-tab="apihelp">API-sleutels aanmaken</button>
+      <button class="modal-tab" data-tab="segments">Tips &amp; Tricks</button>
+    </div>
+    <div class="modal-tab-panel" id="tab-settings">
+    <div class="modal-body">
+
+      <div class="modal-section">
+        <div class="modal-section-label">Claude API-sleutel</div>
+        <div class="form-row">
+          <label for="key-claude">API-sleutel (console.anthropic.com)</label>
+          <div class="form-row-flex">
+            <input type="password" id="key-claude" placeholder="sk-ant-…" autocomplete="off">
+            <button class="btn-test" id="btn-test-claude">Test</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-section">
+        <div class="modal-section-label">Gemini API-sleutel</div>
+        <div class="form-row">
+          <label for="key-gemini">API-sleutel (aistudio.google.com)</label>
+          <div class="form-row-flex">
+            <input type="password" id="key-gemini" placeholder="AIza…" autocomplete="off">
+            <button class="btn-test" id="btn-test-gemini">Test</button>
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="gemini-model">Beeldgeneratiemodel</label>
+          <select id="gemini-model">
+            <option value="gemini-3.1-flash-image-preview" selected>
+              gemini-3.1-flash-image-preview — Gratis preview (nieuwste, aanbevolen)
+            </option>
+            <option value="imagen-4.0-fast-generate-001">
+              imagen-4.0-fast — ~$0,02/afbeelding
+            </option>
+            <option value="imagen-4.0-generate-001">
+              imagen-4.0 — ~$0,04/afbeelding (hoogste kwaliteit)
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-section">
+        <div class="modal-section-label">Consistentieprofiel</div>
+        <div class="consistency-status" id="consistency-status">
+          Geen profiel — wordt automatisch aangemaakt bij eerste generatie.
+        </div>
+        <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+          <button class="btn" id="btn-gen-consistency">Genereer profiel</button>
+          <button class="btn btn-danger" id="btn-clear-consistency">Wis profiel</button>
+        </div>
+        <p style="font-size:10px;color:var(--text-muted);margin-top:6px;line-height:1.5">
+          Het profiel (CHARACTER SHEET, WORLD RULES, FORBIDDEN) wordt als vaste prefix
+          aan elke Gemini-beeldprompt toegevoegd voor visuele consistentie.
+        </p>
+      </div>
+
+      <div class="modal-section">
+        <div class="modal-section-label">Stijlproef (visueel anker)</div>
+        <div id="style-proof-status">
+          <span id="style-proof-label">
+            Geen stijlproef — wordt automatisch ingesteld op de eerste afbeelding.
+          </span>
+          <img id="style-proof-thumb" src="" alt="Stijlproef"
+               style="display:none;max-height:70px;border-radius:3px;margin-top:7px;border:1px solid var(--border)">
+        </div>
+        <div style="margin-top:8px">
+          <button class="btn btn-danger" id="btn-clear-style-proof">Wis stijlproef</button>
+        </div>
+        <p style="font-size:10px;color:var(--text-muted);margin-top:6px;line-height:1.5">
+          De stijlproef wordt als referentieafbeelding meegestuurd naar Gemini Flash
+          om kleurpalet en tekenstijl te verankeren. Gebruik de ⚓ Anker-knop per afbeelding
+          om een andere foto als anker in te stellen.
+        </p>
+      </div>
+
+      <div class="modal-section">
+        <div class="modal-section-label">Generatie-instellingen</div>
+        <div class="form-row">
+          <label for="gen-strategy">Strategie</label>
+          <select id="gen-strategy">
+            <option value="sequential">Één voor één (aanbevolen)</option>
+            <option value="batch">Batch — parallel (sneller, meer API-load)</option>
+          </select>
+        </div>
+        <div class="toggle-row">
+          <span>Karakterreferentie genereren als 0e afbeelding</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="calibration-toggle" checked>
+            <span class="ts-track"></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <span>Debug-modus (toont prompts in console)</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="debug-toggle">
+            <span class="ts-track"></span>
+          </label>
+        </div>
+      </div>
+
+    </div>
+    </div><!-- /tab-settings -->
+
+    <div class="modal-tab-panel hidden" id="tab-segments">
+      <div class="modal-body">
+
+        <div class="modal-section">
+          <div class="modal-section-label">Markeringen &amp; segmenten</div>
+          <p class="apihelp-note" style="margin-bottom:8px">
+            Klik op een §-nummer in kolom 1 om een paragraaf te markeren. Elke
+            gemarkeerde paragraaf levert standaard één afbeelding op. Met segmenten
+            kun je dat aanpassen: korte paragrafen samenvoegen of een lange opsplitsen.
+          </p>
+          <p class="apihelp-note">
+            Onderin kolom 1 zie je altijd een samenvatting van je markeringen, bijv.
+            <em>Markeringen: §3–4, §35–43, §46–47 (13§ → 8 segmenten)</em>. De
+            kostenschatting past zich automatisch aan.
+          </p>
+          <p class="apihelp-note" style="color:var(--gold);margin-top:8px">
+            ✦ Segmenten werken het beste in modus B (kleine reeks) met scènekeuze
+            "gebruik mijn markeringen" — het dropdown "Aantal afbeeldingen" verdwijnt
+            dan automatisch omdat het segment-aantal leidend is.
+          </p>
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-section-label">Paragrafen samenvoegen</div>
+          <p class="apihelp-note">
+            Elke gemarkeerde paragraaf is standaard een eigen segment. Tussen twee
+            aangrenzende gemarkeerde paragrafen staat een goudkleurige lijn met <strong>−</strong>:
+          </p>
+          <div class="seg-help-example">
+            <div class="seg-help-cap">▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬</div>
+            <div class="seg-help-para">§3 — tekst van paragraaf 3…</div>
+            <div class="seg-help-between is-split"><span class="seg-help-btn">−</span></div>
+            <div class="seg-help-para">§4 — tekst van paragraaf 4…</div>
+            <div class="seg-help-cap">▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬</div>
+          </div>
+          <p class="apihelp-note" style="margin-top:8px">
+            Klik <strong>−</strong> om de grens te verwijderen — §3 en §4 worden samen
+            één afbeelding. Er verschijnt een gestippelde lijn met <strong>+</strong>
+            om de grens terug te plaatsen.
+          </p>
+          <p class="apihelp-note" style="margin-top:6px">
+            Bij niet-aangrenzende gemarkeerde paragrafen (bijv. §3 en §7, met §4–6
+            ongemarkeerd) verschijnt <strong>−</strong> onderaan §3 en bovenaan §7.
+            Klik op één van beide om ze te koppelen — tussenliggende paragrafen worden
+            <em>niet</em> meegenomen.
+          </p>
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-section-label">Paragraaf opsplitsen ✦ experimenteel</div>
+          <p class="apihelp-note">
+            Houd een gemarkeerde paragraaf <strong>0,5 sec ingedrukt</strong> (of houd
+            de muisknop ingedrukt op desktop). Er verschijnt een rode splitslijn:
+          </p>
+          <div class="seg-help-example">
+            <div class="seg-help-para">§5 — Eerste deel van de paragraaftekst.</div>
+            <div class="seg-help-intra">⠿ ────────────── − ──────────────</div>
+            <div class="seg-help-para">Tweede deel van de paragraaftekst.</div>
+          </div>
+          <p class="apihelp-note" style="margin-top:8px">
+            Beweeg je vinger (of muis) omhoog of omlaag om de splitser op een andere
+            zingrens te plaatsen. Laat los om te bevestigen. Sleep daarna het
+            <strong>⠿</strong>-symbool links op de lijn om de positie later te wijzigen.
+          </p>
+          <p class="apihelp-note" style="margin-top:6px">
+            Klik <strong>−</strong> op de rode lijn om de splitsing te verwijderen.
+            Een opgesplitste paragraaf kan niet tegelijk worden samengevoegd met
+            buuraaragrafen.
+          </p>
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-section-label">Resultaten bewaren</div>
+          <p class="apihelp-note">
+            Gegenereerde afbeeldingen blijven zichtbaar totdat je ze handmatig verwijdert.
+            Gebruik <strong>✕</strong> op een afbeeldingskaart om één afbeelding te
+            verwijderen, of de knop <strong>Wis alles</strong> rechts bovenin kolom 3
+            om alles in één keer te wissen.
+          </p>
+        </div>
+
+      </div>
+    </div><!-- /tab-segments -->
+
+    <div class="modal-tab-panel hidden" id="tab-apihelp">
+      <div class="modal-body">
+
+        <div class="modal-section">
+          <div class="modal-section-label">Claude API-sleutel (Anthropic)</div>
+          <ol class="apihelp-steps">
+            <li>Ga naar <strong>console.anthropic.com</strong> en log in of maak een account aan.</li>
+            <li>Klik linksboven op <strong>API Keys</strong> in het menu.</li>
+            <li>Klik <strong>Create Key</strong>, geef een naam (bijv. "Novelizer"), en bevestig.</li>
+            <li>Kopieer de sleutel die begint met <code>sk-ant-api03-…</code> — deze wordt maar één keer getoond.</li>
+            <li>Plak de sleutel in het veld <em>Claude API-sleutel</em> op het tabblad Instellingen.</li>
+          </ol>
+          <p class="apihelp-note">Kosten: Claude Sonnet ~$3/M input tokens. Een volledige generatieronde kost typisch &lt;$0,05.</p>
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-section-label">Gemini API-sleutel (Google AI Studio)</div>
+          <ol class="apihelp-steps">
+            <li>Ga naar <strong>aistudio.google.com</strong> en log in met een Google-account.</li>
+            <li>Klik rechtsboven op <strong>Get API key</strong>.</li>
+            <li>Klik <strong>Create API key</strong> en kies een Google Cloud-project (of maak er een aan).</li>
+            <li>Kopieer de sleutel die begint met <code>AIzaSy…</code></li>
+            <li>Plak de sleutel in het veld <em>Gemini API-sleutel</em> op het tabblad Instellingen.</li>
+          </ol>
+          <p class="apihelp-note">Gemini 2.5 Flash Image is gratis binnen ruime quota. Imagen 4.0 kost ~$0,02–0,04 per afbeelding.</p>
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-section-label">Veiligheid</div>
+          <p class="apihelp-note">De sleutels worden alleen lokaal opgeslagen in je browser (localStorage). Ze worden nooit naar onze servers gestuurd — alle API-aanroepen gaan rechtstreeks vanuit je browser naar Anthropic en Google.</p>
+        </div>
+
+      </div>
+    </div><!-- /tab-apihelp -->
+
+    <div class="modal-footer">
+      <button class="btn btn-danger" id="btn-clear-all">Wis alles</button>
+      <button class="btn" id="modal-close-btn" onclick="document.getElementById('modal-settings').classList.add('hidden')">Sluiten</button>
+    </div>
+  </div>
+</div>
+
+<!-- JSZip (voor ZIP-download) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"
+        integrity="sha512-XMVd28F1oH/O71fzwBnV7HucLxVwtxf26XV8P4wPk26EDxuGZ91N8bsOttmnomcCD3CS5ZMRL50H0GgOHvegtg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<!-- App -->
+<script type="module" src="js/app.js?v=6"></script>
+
+<script>
+  // ── Accordion: max 1 sectie open tegelijk ───────────────────────────────
+  const allSections = Array.from(document.querySelectorAll('section[data-open]'));
+
+  document.querySelectorAll('.col-header').forEach(header => {
+    header.addEventListener('click', e => {
+      if (e.target.closest('.col-header-action')) return;
+      const section = header.closest('section[data-open]');
+      if (!section) return;
+      const wasOpen = section.dataset.open === 'true';
+      // Sluit alle secties
+      allSections.forEach(s => { s.dataset.open = 'false'; });
+      // Open de aangeklikte sectie, tenzij die al open was
+      if (!wasOpen) section.dataset.open = 'true';
+    });
+  });
+</script>
+
+<!-- ── Story creator modal ──────────────────────────────────────────────── -->
+<div class="modal-overlay hidden" id="creator-modal">
+  <div class="modal creator-modal-box">
+    <div class="modal-header">
+      <span class="modal-title">Nieuw verhaal aanmaken</span>
+      <button class="modal-close-btn" id="creator-close">✕</button>
+    </div>
+    <div class="creator-body">
+      <textarea id="creator-input" class="creator-textarea"
+        placeholder="Plak of schrijf hier de volledige verhaaltekst. Claude bepaalt automatisch de titel, auteur, paragraafindeling en wereldregels. Geen §-nummers nodig."></textarea>
+      <div class="creator-actions">
+        <button id="btn-creator-generate" class="btn creator-btn-primary">Genereer storydata (Claude)</button>
+        <button id="btn-creator-export" class="btn btn-sm" disabled>↓ Exporteer JSON</button>
+        <label class="btn btn-sm creator-import-label">↑ Importeer JSON
+          <input type="file" id="creator-import-file" accept=".json" style="display:none">
+        </label>
+        <button id="btn-creator-save-js" class="btn btn-sm dev-only" disabled title="Print StoryDef als JS-bestand naar console (en kopieer naar klembord)">📋 Print als JS</button>
+      </div>
+      <div id="creator-status" class="creator-status"></div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
