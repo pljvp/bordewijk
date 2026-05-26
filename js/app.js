@@ -226,8 +226,8 @@ document.addEventListener('DOMContentLoaded', () => {
         _setStatus('Karakterreferentie genereren (Gemini)…');
         _debugLog('Karakterreferentie genereren…');
       })
-      .on('calibration-image', ({ dataUrl, onDecide }) => {
-        outputView.showCalibrationImage(dataUrl, onDecide);
+      .on('calibration-image', ({ dataUrl, charNames, onDecide }) => {
+        outputView.showCalibrationImage(dataUrl, onDecide, charNames);
         _updateStyleProofStatus();
         _setStatus(onDecide ? 'Karakterreferentie gereed — keur goed of genereer opnieuw.' : '');
         _debugLog('Karakterreferentie gereed — wacht op goedkeuring.');

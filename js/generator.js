@@ -6,7 +6,7 @@ import { STYLE_DEFS } from './style_defs.js';
 import bordewijkStory from './stories/bordewijk_verplaatsing.js';
 import { STRIP_STYLES } from './strip_styles.js';
 
-export const VERSION = 'v0.032';
+export const VERSION = 'v0.033';
 
 // ─── Hulpfuncties ────────────────────────────────────────────────────────────
 
@@ -422,6 +422,7 @@ export class Generator {
               sig.addEventListener('abort', onAbort, { once: true });
               this._emit('calibration-image', {
                 dataUrl: calDataUrl,
+                charNames: this._extractCharNames(charAppearances),
                 onDecide: (action, note = '') => {
                   sig.removeEventListener('abort', onAbort);
                   resolve({ action, note });
@@ -910,6 +911,17 @@ FORBIDDEN
   _extractCharAppearances(consistencyText) {
     const match = consistencyText.match(/CHARACTER APPEARANCE[\s\S]*?(?=\nSCENE PROPS|\nWORLD RULES|\nRECURRING)/);
     return match ? match[0].trim() : '';
+  }
+
+  // Extraheer karakter namen uit charAppearances voor label-overlay op kalibratie-afbeelding.
+  // Geeft ["Bordemanse · 1956 young", "Drebbel · 1956"] terug, in volgorde van het profiel.
+  _extractCharNames(charAppearances) {
+    const names = [];
+    for (const line of (charAppearances || '').split('\n')) {
+      const m = line.match(/^-\s+(.+?)\s*\((?:protagonist|antagonist|mentor|bystander)\)/i);
+      if (m) names.push(m[1].trim());
+    }
+    return names;
   }
 
   // Extraheer het SCENE PROPS blok — eigendomsinformatie voor scene-selectieprompts.

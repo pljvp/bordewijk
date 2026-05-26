@@ -1,5 +1,37 @@
 // output.js — resultaatweergave, galerij, download PNG/ZIP
 
+// Tekent een label-balk onder de afbeelding met de karakter-namen.
+// Geeft een nieuwe dataUrl terug (origineel ongewijzigd).
+function _addCharLabels(dataUrl, names) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const W = img.naturalWidth || img.width;
+      const H = img.naturalHeight || img.height;
+      const fontSize = Math.max(13, Math.round(W / 38));
+      const barH = Math.round(fontSize * 2.4);
+      const canvas = document.createElement('canvas');
+      canvas.width = W;
+      canvas.height = H + barH;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      ctx.fillStyle = '#111111';
+      ctx.fillRect(0, H, W, barH);
+      ctx.font = `${fontSize}px system-ui, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#cccccc';
+      const n = names.length;
+      names.forEach((name, i) => {
+        ctx.fillText(name, (W / n) * (i + 0.5), H + barH / 2);
+      });
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
+  });
+}
+
 export class OutputView {
   constructor(containerEl) {
     this._el = containerEl;
@@ -160,11 +192,15 @@ export class OutputView {
     this._el.querySelector('#prog-calibration')?.remove();
   }
 
-  showCalibrationImage(dataUrl, onDecide) {
+  async showCalibrationImage(dataUrl, onDecide, charNames = []) {
     this.hideCalibrationProgress();
     // Verwijder eventuele vorige kaart (bij ↺ Opnieuw)
     if (this._calibrationCard) { this._calibrationCard.remove(); this._calibrationCard = null; }
     if (this._el.querySelector('.output-empty')) this._el.innerHTML = '';
+
+    // Voeg karakter-naam labels toe als donkere balk onder de afbeelding.
+    // De stijlproef die naar Gemini gaat (opgeslagen in generator) blijft zonder tekst.
+    const displayUrl = charNames.length ? await _addCharLabels(dataUrl, charNames) : dataUrl;
 
     const card = document.createElement('div');
     card.className = 'calibration-card';
@@ -184,12 +220,12 @@ export class OutputView {
         </div>
       </div>` : ''}`;
 
-    card.querySelector('.calibration-img').src = dataUrl;
+    card.querySelector('.calibration-img').src = displayUrl;
     card.querySelector('.calibration-img').addEventListener('click', () => {
-      this._openLightboxCalibration(dataUrl);
+      this._openLightboxCalibration(displayUrl);
     });
     card.querySelector('.calibration-dl').addEventListener('click', () => {
-      _downloadDataUrl(dataUrl, `${this._story?.fileCode || 'WK'}_${this._makeDatetime()}_000_karakterreferentie.png`);
+      _downloadDataUrl(displayUrl, `${this._story?.fileCode || 'WK'}_${this._makeDatetime()}_000_karakterreferentie.png`);
     });
 
     if (onDecide) {
@@ -226,7 +262,7 @@ export class OutputView {
     }
 
     this._calibrationCard = card;
-    this._calibrationDataUrl = dataUrl;
+    this._calibrationDataUrl = displayUrl;
     this._el.prepend(card);
   }
 
