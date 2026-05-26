@@ -207,17 +207,69 @@ Elke afbeeldingsprompt is een geordende aaneenschakeling:
 [1] ART STYLE block            ← stijlmix (w1/w2/w3)
 [2] RENDERING bridge note      ← relatie ART STYLE ↔ stripstijl (als actief)
 [3] FIDELITY LEVEL / RENDERING ← realism-slider output
-[4] COMIC BOOK RENDERING       ← stripstijl definitie (als actief)
+[4] COMIC BOOK RENDERING       ← stripstijl definitie (als actief) — incl. COMPOSITION EXECUTION
 [5] WORLD RULES                ← storyDef.worldRules — ALTIJD aanwezig
 [6] CHARACTER SHEET + PROPS    ← consistency profile (als aanwezig)
 [7] STYLE REFERENCE NOTE       ← instructie voor gebruik style proof ref-afbeelding
-[8] COMPOSITION directive      ← mode C: camerastandpunt per panel
+[8] COMPOSITION directive      ← alle modi: scene.composition_directive (vrije tekst)
 [9] ACTIVE CHARACTERS          ← welke personages, welke tijdversie
 [10] SCENE-SPECIFIC STATE      ← world_state + scene_forbidden
 [11] SCENE CONTENT             ← Claude-gegenereerde visuele beschrijving
 ```
 
 Plus optioneel een base64 PNG als referentie-afbeelding (de style proof / kalibratie).
+
+---
+
+## Compositiesysteem
+
+### Principe: narratief gestuurd, stijl-uitgevoerd
+
+Compositie en stijl zijn twee onafhankelijke assen:
+
+- **Compositie** — narratieve beslissing: wat vraagt *dit moment* visueel? Claude kiest op basis van de scène-inhoud en emotionele lading.
+- **Stijl-executie** — hoe voert *deze tekenaar* die compositie uit? Vastgelegd in het `COMPOSITION EXECUTION`-blok per stripstijl in `strip_styles.js`.
+
+### `composition_directive` — alle modi (A, B, C)
+
+Claude genereert bij elke scène een `composition_directive` als veld in het scene-JSON. Dit is vrije tekst, geen vocab-label:
+
+```json
+"composition_directive": "extreme low angle wide shot, tiny figures dwarfed by sea overhead, diagonal tension left to right"
+```
+
+De directive combineert vier elementen:
+- **Camerastandpunt** — eye-level / low angle / bird's eye / dutch angle / worm's eye
+- **Shot-grootte** — extreme close-up / close-up / medium shot / wide shot / extreme wide
+- **Figuur-ruimte-verhouding** — figuur vult kader / kleine figuur in grote omgeving
+- **Compositie-energie** — statisch / diagonaal / radiaal / horizontale rust
+
+**Leidraad die Claude meekrijgt:**
+
+| Narratief moment | Compositorische richting |
+|---|---|
+| Actie, conflict | Diagonaal of laag standpunt |
+| Dialoog, overleg | Medium shot, ooghoogte |
+| Schaal, eenzaamheid | Kleine figuur in grote omgeving |
+| Emotionele piek | Close-up of extreme close-up |
+| Overzicht, situatieschets | Vogelperspectief of breed totaalshot |
+
+### Diversiteit in mode C
+
+Mode C (grafische roman) stuurt Claude expliciet aan op variatie: geen twee panels mogen dezelfde combinatie van camerastandpunt, shot-grootte en energie hebben. De leidraad is narratief — de compositiekeuze volgt het verhaalmoment, niet een rotatiesysteem.
+
+### COMPOSITION EXECUTION in `strip_styles.js`
+
+Elke stripstijl heeft een `COMPOSITION EXECUTION`-blok in zijn `PANELS/FRAMES`-sectie. Dit blok beschrijft hoe de stijl *elke willekeurige compositie-instructie* uitvoert — niet welke composities de stijl oplegt. Voorbeelden:
+
+- **Moebius** — frame ademt altijd; sky of landschap vult minstens de helft van het beeld, ongeacht standpunt
+- **Franquin** — diagonaal bij chaos, horizontaal bij rust; camera volgt narratieve functie
+- **Noir** — altijd extreem standpunt (kikkerperspectief of overhead); nooit neutraal ooghoogte
+- **Retera** — altijd statisch ooghoogte, deadpan frontaal; de absurde situatie krijgt dezelfde visuele onverschilligheid als het gewone
+
+### Backward compatibility
+
+`buildFinalGeminiPrompt` leest `scene.composition_directive` met fallback op het oude `scene.composition_type`, zodat eerder opgeslagen scènes bij herGeneratie niet breken.
 
 ---
 

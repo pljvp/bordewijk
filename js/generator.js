@@ -6,7 +6,7 @@ import { STYLE_DEFS } from './style_defs.js';
 import bordewijkStory from './stories/bordewijk_verplaatsing.js';
 import { STRIP_STYLES } from './strip_styles.js';
 
-export const VERSION = 'v0.028';
+export const VERSION = 'v0.032';
 
 // ─── Hulpfuncties ────────────────────────────────────────────────────────────
 
@@ -281,13 +281,14 @@ function buildFinalGeminiPrompt(claudePrompt, style, consistencyProfile, balloon
 
   // Stijlreferentie-instructie wanneer een stijlproef-afbeelding is bijgevoegd,
   // en/of compositiedirectief voor grafische roman (elk panel uniek camerastandpunt).
-  if (scene?.composition_type) {
-    if (hasStyleProof) {
-      parts.push(`STYLE REFERENCE NOTE: The attached reference image establishes the visual style for this series — comic rendering technique, line weight, color palette, and character treatment. Use it for consistency. Do NOT copy its composition, framing, or subject placement.`);
-    }
-    parts.push(`COMPOSITION: ${scene.composition_type} — apply this framing strictly${hasStyleProof ? ', overriding any composition in the reference image' : ''}.`);
-  } else if (hasStyleProof) {
-    parts.push(`STYLE REFERENCE NOTE: The attached reference image shows the established visual style for this series. Match its comic rendering technique, line weight, color palette, and character treatment. Do NOT copy its composition or subject placement.`);
+  const compDir = scene?.composition_directive || scene?.composition_type;
+  if (hasStyleProof) {
+    // Expliciete waarschuwing dat de stijlproef een KARAKTER-LINEUP is, geen scène.
+    // Zonder dit kan Gemini de lineup-compositie als template behandelen.
+    parts.push(`STYLE REFERENCE IMAGE — CHARACTER REFERENCE SHEET ONLY: The attached image is a neutral character lineup (figures standing side by side, facing the viewer, plain background). It establishes ONLY visual style: line technique, color palette, how each character looks. It is NOT a scene composition. Do NOT reproduce its arrangement: no characters standing in a row, no frontal neutral poses, no plain empty background. Every scene image must place characters in active, narrative staging — in motion, in context, in environment.`);
+  }
+  if (compDir) {
+    parts.push(`COMPOSITION: ${compDir}.`);
   }
 
   // Actieve karakters voor deze scène — welke tijdversie per personage
@@ -577,12 +578,13 @@ export class Generator {
 
     if (sceneSource === 'marks' && marks.length) {
       const paraText = getParaText(marks, this._story);
-      return [{
+      const scenes = [{
         scene_title: shortTitle(paraText),
         visual_description: paraText,
         key_elements: [],
         paragraph_ids: marks,
       }];
+      return this._addCompositionDirectives(scenes, sig, debug);
     }
 
     const propContext = sceneProps
@@ -607,7 +609,8 @@ Antwoord uitsluitend als JSON (geen andere tekst):
   "key_elements": ["<visueel element>"],
   "world_state": "<one sentence in English: state of the world at this point in the story — has the sea been displaced? what is visible above the characters? season/time of day?>",
   "scene_forbidden": ["<visual element that must NOT appear in THIS specific scene, based on the story text — in English>"],
-  "active_characters": [{"name": "<character name>", "temporal_version": "<e.g. '1956 young' or '2006 old'>", "role": "<protagonist|antagonist|mentor|bystander>", "action": "<what this character is physically doing in this specific scene — verb phrase, max 10 words>"}]
+  "active_characters": [{"name": "<character name>", "temporal_version": "<e.g. '1956 young' or '2006 old'>", "role": "<protagonist|antagonist|mentor|bystander>", "action": "<what this character is physically doing in this specific scene — verb phrase, max 10 words>"}],
+  "composition_directive": "<camera angle + shot size + figure-to-space ratio + compositional energy, chosen for this scene's specific action and emotional register — e.g. 'extreme low angle wide shot, tiny figures dwarfed by sea overhead, diagonal tension left to right' or 'tight close-up, face half in shadow, static intensity' or 'medium shot eye-level, two figures facing each other, horizontal calm'>"
 }`;
 
     if (debug) console.log('[NV] Prompt 1 (scene A):', prompt);
@@ -639,7 +642,7 @@ Antwoord uitsluitend als JSON (geen andere tekst):
       const segs = (segments && segments.length > 0)
         ? segments
         : marks.map(id => ({ paras: [id] }));
-      return segs.map(seg => {
+      const scenes = segs.map(seg => {
         const text = getSegmentText(seg, this._story);
         return {
           scene_title: shortTitle(text),
@@ -648,6 +651,7 @@ Antwoord uitsluitend als JSON (geen andere tekst):
           paragraph_ids: seg.paras,
         };
       });
+      return this._addCompositionDirectives(scenes, sig, debug);
     }
 
     const propContext = sceneProps
@@ -672,7 +676,8 @@ Antwoord uitsluitend als JSON-array met precies ${n} objecten (geen andere tekst
     "key_elements": ["<element>"],
     "world_state": "<one sentence in English: state of the world at this point — has the sea been displaced? what is visible above the characters?>",
     "scene_forbidden": ["<visual element that must NOT appear in THIS specific scene — in English>"],
-    "active_characters": [{"name": "<character name>", "temporal_version": "<'1956 young'|'1956 old'|'2006 old'>", "role": "<protagonist|antagonist|mentor|bystander>", "action": "<what this character is physically doing in this specific scene — verb phrase, max 10 words>"}]
+    "active_characters": [{"name": "<character name>", "temporal_version": "<'1956 young'|'1956 old'|'2006 old'>", "role": "<protagonist|antagonist|mentor|bystander>", "action": "<what this character is physically doing in this specific scene — verb phrase, max 10 words>"}],
+    "composition_directive": "<camera angle + shot size + figure-to-space ratio + compositional energy, chosen for this scene's specific action and emotional register — e.g. 'extreme low angle wide shot, tiny figures dwarfed by sea overhead, diagonal tension left to right' or 'tight close-up, face half in shadow, static intensity' or 'medium shot eye-level, two figures facing each other, horizontal calm'>"
   }
 ]`;
 
@@ -683,19 +688,7 @@ Antwoord uitsluitend als JSON-array met precies ${n} objecten (geen andere tekst
   }
 
   async _getScenesC(n, sceneSource, marks, sig, debug, sceneProps = '') {
-    const compVocab = [
-      'totaalshot — buitenlocatie',
-      'close-up portret',
-      'medium shot — twee figuren',
-      'vogelperspectief — interieur',
-      'laag camerastandpunt — dramatisch',
-      'panorama — zee overhead zichtbaar',
-      'silhouet — tegenlicht',
-      'interieur — eenzame figuur',
-      'menigte — groepsscène',
-    ].join(' | ');
-
-    const compRule = `COMPOSITIEREGEL: Elk panel krijgt een uniek "composition_type" uit dit vocabulaire: ${compVocab}. Geen twee panels mogen hetzelfde type hebben.`;
+    const compRule = `COMPOSITIEREGEL: Elk panel krijgt een unieke "composition_directive" op basis van de scène-inhoud en emotionele lading van dat specifieke moment. Varieer bewust over alle ${n} panels: geen twee panels mogen dezelfde combinatie van camerastandpunt, shot-grootte en compositie-energie hebben. Leidraad: actie → diagonaal of laag standpunt; dialoog → medium shot ooghoogte; schaal of eenzaamheid → kleine figuur in grote omgeving; emotionele piek → close-up of extreme close-up; overzicht → vogelperspectief of breed totaalshot. Volg de emotionele lading van het verhaalmoment.`;
 
     // Korte beschrijvingen bij grote aantallen om tokenlimieten te vermijden
     const lengthNote = n >= 12
@@ -714,7 +707,7 @@ Antwoord uitsluitend als JSON-array met precies ${n} objecten (geen andere tekst
     "world_state": "<one sentence in English: state of the world at this point in the story>",
     "scene_forbidden": ["<visual element that must NOT appear in this specific panel — in English>"],
     "active_characters": [{"name": "<character name>", "temporal_version": "<'1956 young'|'1956 old'|'2006 old'>", "role": "<protagonist|antagonist|mentor|bystander>", "action": "<what this character is physically doing in this specific scene — verb phrase, max 10 words>"}],
-    "composition_type": "<kies één uit vocabulaire — elk panel een ander type>"
+    "composition_directive": "<camera angle + shot size + figure-to-space ratio + compositional energy — specific to this panel's scene and emotional register, e.g. 'low angle wide shot, figures small against vast sea overhead, diagonal tension'; 'tight close-up filling frame, static intensity'; 'bird's eye, lone figure in empty street, vertical isolation'>"
   }
 ]`;
 
@@ -822,6 +815,40 @@ Bevat dit fragment directe rede of dialoog die geschikt is als tekstballon in ee
     const result = await claudeComplete([{ role: 'user', content: prompt }], '', sig);
     const text = result.trim();
     return text === 'GEEN' ? null : text;
+  }
+
+  // ─── Composition directives voor marks-bronscènes ─────────────────────────
+  // Marks/random-bronnen genereren scenes zonder Claude-keuze en hebben daardoor
+  // geen composition_directive. Deze methode voegt die toe via één Claude-call.
+  async _addCompositionDirectives(scenes, sig, debug) {
+    if (!scenes.length) return scenes;
+    const listed = scenes.map((s, i) =>
+      `Scene ${i + 1}: "${s.scene_title}" — ${(s.visual_description || '').slice(0, 300)}`
+    ).join('\n\n');
+
+    const prompt = `You are a visual composition editor for a graphic novel. The descriptions below are literary text excerpts — extract the most dramatically charged single moment from each and assign a composition directive.
+
+STRICT RULE: Never suggest characters simply standing side by side facing the viewer — that is a character reference sheet, not a scene. Every directive must place characters in ACTIVE, NARRATIVE staging: in motion, reacting, in environment, interacting with space.
+
+For each scene write a "composition_directive" specifying: camera angle (e.g. low-angle, overhead, dutch tilt, eye-level) + shot size (extreme close-up / close-up / medium / wide / establishing) + figure-to-space ratio + compositional energy/tension (e.g. diagonal, radial, static, kinetic).
+
+${listed}
+
+Reply ONLY as a JSON array with exactly ${scenes.length} objects, no other text:
+[{"composition_directive": "..."}, ...]`;
+
+    if (debug) console.log('[NV] Composition directives prompt:', prompt);
+    try {
+      const raw = await claudeComplete([{ role: 'user', content: prompt }], '', sig);
+      if (debug) console.log('[NV] Composition directives response:', raw);
+      const directives = safeParseJsonArray(raw);
+      return scenes.map((s, i) => ({
+        ...s,
+        composition_directive: directives[i]?.composition_directive || '',
+      }));
+    } catch {
+      return scenes;
+    }
   }
 
   // ─── Consistentieprofiel (Prompt 0) ────────────────────────────────────────

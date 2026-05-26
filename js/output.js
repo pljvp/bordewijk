@@ -189,7 +189,7 @@ export class OutputView {
       this._openLightboxCalibration(dataUrl);
     });
     card.querySelector('.calibration-dl').addEventListener('click', () => {
-      _downloadDataUrl(dataUrl, `${this._story?.fileCode || 'WK'}_000_karakterreferentie.png`);
+      _downloadDataUrl(dataUrl, `${this._story?.fileCode || 'WK'}_${this._makeDatetime()}_000_karakterreferentie.png`);
     });
 
     if (onDecide) {
@@ -377,6 +377,10 @@ export class OutputView {
             <summary>Prompt ▾</summary>
             <pre style="margin:4px 0 0;white-space:pre-wrap;font-size:9px;line-height:1.4;max-height:180px;overflow-y:auto">${_escHtml(prompt)}</pre>
           </details>` : ''}
+          ${(scene?.composition_directive || scene?.composition_type) ? `<details class="image-card-style-info">
+            <summary>Compositie ▾</summary>
+            <div style="padding-top:4px;font-size:10px;line-height:1.5">${_escHtml(scene.composition_directive || scene.composition_type)}</div>
+          </details>` : ''}
         </div>
         <div style="display:flex;gap:5px;flex-shrink:0">
           <button class="btn-sm btn-dl">↓ PNG</button>
@@ -470,7 +474,7 @@ export class OutputView {
 
       if (this._calibrationDataUrl) {
         const dataUrl = await this._compositeTitlePage();
-        files.push({ dataUrl, filename: `${fc}_000_titelblad.png` });
+        files.push({ dataUrl, filename: `${fc}_${this._makeDatetime()}_000_karakterreferentie.png` });
       }
 
       for (const data of images) {
@@ -614,6 +618,13 @@ export class OutputView {
 
   // ─── ZIP download ────────────────────────────────────────────────────────────
 
+  _makeDatetime() {
+    const now = new Date();
+    const d = `${String(now.getFullYear()).slice(2)}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
+    const t = `${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
+    return `${d}_${t}`;
+  }
+
   _makeZipName(count, suffix = '') {
     const fc   = this._story?.fileCode || 'WK';
     const slug = (this._story?.title || 'verhaal')
@@ -634,7 +645,7 @@ export class OutputView {
       const zip = new JSZip();
       const fc = this._story?.fileCode || 'WK';
       if (this._calibrationDataUrl) {
-        zip.file(`${fc}_000_karakterreferentie.png`, this._calibrationDataUrl.split(',')[1], { base64: true });
+        zip.file(`${fc}_${this._makeDatetime()}_000_karakterreferentie.png`, this._calibrationDataUrl.split(',')[1], { base64: true });
       }
       images.forEach(data => {
         const b64 = data.dataUrl.split(',')[1];
@@ -652,7 +663,7 @@ export class OutputView {
       // Fallback: download individually
       let delay = 0;
       if (this._calibrationDataUrl) {
-        setTimeout(() => _downloadDataUrl(this._calibrationDataUrl, `${this._story?.fileCode || 'WK'}_000_karakterreferentie.png`), delay);
+        setTimeout(() => _downloadDataUrl(this._calibrationDataUrl, `${this._story?.fileCode || 'WK'}_${this._makeDatetime()}_000_karakterreferentie.png`), delay);
         delay += 200;
       }
       images.forEach(data => {
