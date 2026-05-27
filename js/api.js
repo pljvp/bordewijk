@@ -11,7 +11,7 @@ export class ApiError extends Error {
   }
 }
 
-export async function claudeComplete(messages, systemPrompt, signal) {
+export async function claudeComplete(messages, systemPrompt, signal, maxTokens = 8192) {
   const key = storage.getClaudeKey();
   if (!key) throw new ApiError('Geen Claude API-sleutel ingesteld.', 0, null);
 
@@ -26,7 +26,7 @@ export async function claudeComplete(messages, systemPrompt, signal) {
     },
     body: JSON.stringify({
       model: 'claude-sonnet-4-6',
-      max_tokens: 8192,
+      max_tokens: maxTokens,
       system: systemPrompt || '',
       messages,
     }),

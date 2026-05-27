@@ -35,7 +35,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const triangleWidget = new TriangleWidget(document.getElementById('triangle-container'));
   const generator = new Generator();
   const outputView = new OutputView(document.getElementById('output-container'));
-  outputView.setStory(getActiveStory());
+  const _activeStory = getActiveStory();
+  storyView.setStory(_activeStory);
+  generator.setStory(_activeStory);
+  outputView.setStory(_activeStory);
 
   // HerGeneratie-callback: roept generator aan voor één afbeelding
   outputView.onRegenerate(async ({ data, correctionNote, onResult, onError }) => {
@@ -264,8 +267,8 @@ document.addEventListener('DOMContentLoaded', () => {
         outputView.addImage(data);
         _debugLog(`Afbeelding ${data.index + 1} gereed. Prompt:\n${data.prompt}`);
       })
-      .on('image-error', ({ index, message }) => {
-        outputView.addError(index, _total, message);
+      .on('image-error', ({ index, message, scene }) => {
+        outputView.addError(index, _total, message, scene);
         _debugLog(`Afbeelding ${index + 1} mislukt: ${message}`);
       })
       .on('error', ({ message }) => {
@@ -794,6 +797,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ─── Story creator modal ───────────────────────────────────────────────────
 
   let _creatorLastDef = null;
+  let _creatorLastRaw = null;
   let _creatorAc = null;
 
   function _openCreatorModal() {
@@ -827,6 +831,7 @@ document.addEventListener('DOMContentLoaded', () => {
     statusEl.className = 'creator-status';
     statusEl.textContent = 'Claude verwerkt de tekst…';
     exportBtn.disabled = true;
+    _creatorLastRaw = null;
 
     try {
       const def = await generateStoryDef(text, _creatorAc.signal);
@@ -842,7 +847,13 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (err) {
       if (err.name === 'AbortError') return;
       statusEl.className = 'creator-status error';
-      statusEl.textContent = `Fout: ${err.message}`;
+      if (err.rawResponse) {
+        _creatorLastRaw = err.rawResponse;
+        exportBtn.disabled = false;
+        statusEl.textContent = `Fout: ${err.message} — gebruik ↓ Exporteer JSON om de ruwe tekst te downloaden en handmatig te repareren.`;
+      } else {
+        statusEl.textContent = `Fout: ${err.message}`;
+      }
       _debugLog(`Story creator fout: ${err.message}`);
     } finally {
       btn.disabled = false;
@@ -851,11 +862,15 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('btn-creator-export').addEventListener('click', () => {
-    if (!_creatorLastDef) return;
-    const blob = new Blob([JSON.stringify(_creatorLastDef, null, 2)], { type: 'application/json' });
+    if (!_creatorLastDef && !_creatorLastRaw) return;
+    const isRaw = !_creatorLastDef && _creatorLastRaw;
+    const content = isRaw ? _creatorLastRaw : JSON.stringify(_creatorLastDef, null, 2);
+    const filename = isRaw ? 'raw_response.txt' : `${_creatorLastDef.id}.json`;
+    const type = isRaw ? 'text/plain' : 'application/json';
+    const blob = new Blob([content], { type });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `${_creatorLastDef.id}.json`;
+    a.download = filename;
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 60_000);
   });

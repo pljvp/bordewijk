@@ -303,7 +303,27 @@ export class OutputView {
 
     const el = document.createElement('div');
     el.className = 'error-card';
-    el.innerHTML = `<strong>Afbeelding ${index + 1}/${total} mislukt:</strong> ${_escHtml(message)}`;
+
+    const label = scene?.panel_number
+      ? `Panel ${scene.panel_number}/${total}`
+      : `Afbeelding ${index + 1}/${total}`;
+
+    let sceneHtml = '';
+    if (scene) {
+      const title = scene.scene_title ? `<div class="error-scene-title">${_escHtml(scene.scene_title)}</div>` : '';
+      const chars = scene.active_characters?.length
+        ? `<div class="error-scene-chars"><em>Karakters:</em> ${_escHtml(scene.active_characters.map(c => c.name).join(', '))}</div>`
+        : '';
+      const desc = scene.visual_description
+        ? `<details class="error-scene-desc"><summary>Visuele beschrijving (voor handmatige retry)</summary><pre>${_escHtml(scene.visual_description)}</pre></details>`
+        : '';
+      const paras = scene.paragraph_ids?.length
+        ? `<div class="error-scene-chars"><em>Paragrafen:</em> ${_escHtml(scene.paragraph_ids.join(', '))}</div>`
+        : '';
+      sceneHtml = `<div class="error-scene-info">${title}${chars}${paras}${desc}</div>`;
+    }
+
+    el.innerHTML = `<strong>${_escHtml(label)} mislukt (ook na retry):</strong> ${_escHtml(message)}${sceneHtml}`;
     this._el.appendChild(el);
   }
 

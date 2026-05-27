@@ -6,7 +6,7 @@ import { STYLE_DEFS } from './style_defs.js';
 import bordewijkStory from './stories/bordewijk_verplaatsing.js';
 import { STRIP_STYLES } from './strip_styles.js';
 
-export const VERSION = 'v0.034';
+export const VERSION = 'v0.035';
 
 // ─── Hulpfuncties ────────────────────────────────────────────────────────────
 
@@ -341,7 +341,7 @@ function buildFilename(scene, style, idx, fileCode = 'WK') {
   const p2  = Math.round((style.w2 || 0) * 100);
   const p3  = Math.round((style.w3 || 0) * 100);
   const ids = (scene.paragraph_ids || [scene.panel_number]).join('-');
-  return `${fileCode}_${seq}_${dateStr}_${titleSlug}_§${ids}_s${p1}-${p2}-${p3}_r${style.realism}.png`;
+  return `${fileCode}_${dateStr}_${seq}_${titleSlug}_§${ids}_s${p1}-${p2}-${p3}_r${style.realism}.png`;
 }
 
 // ─── Generator ───────────────────────────────────────────────────────────────
@@ -517,7 +517,16 @@ export class Generator {
           const finalPrompt = buildFinalGeminiPrompt(claudePrompt.trim(), style, consistency, balloonText, stripStyle, scene, !!styleProof, this._story.worldRules);
 
           if (sig.aborted) return;
-          const dataUrl = await geminiGenerateImage(finalPrompt, model, sig, styleProof);
+          let dataUrl;
+          try {
+            dataUrl = await geminiGenerateImage(finalPrompt, model, sig, styleProof);
+          } catch (firstErr) {
+            if (sig.aborted) return;
+            // Eenmalige retry na 3 seconden — vangt tijdelijke Gemini-fouten op
+            await new Promise(r => setTimeout(r, 3000));
+            if (sig.aborted) return;
+            dataUrl = await geminiGenerateImage(finalPrompt, model, sig, styleProof);
+          }
 
           // Eerste scène als stijlproef opslaan als er nog geen is (fallback als kalibratie uit stond)
           let isAutoProof = false;
@@ -940,6 +949,8 @@ FORBIDDEN
       ? 'The taller character stands on the LEFT, the shorter on the RIGHT.'
       : `Characters arranged left to right, tallest to shortest (${charCount} figures total).`;
 
+    const charNames = this._extractCharNames(charAppearances);
+
     const lineupDesc = `CHARACTER LINEUP — establish the definitive visual reference for all characters in this series.
 
 Draw exactly ${charCount} character${charCount === 1 ? '' : 's'} standing side by side, facing the viewer directly, full body visible from head to toe. Simple neutral setting: empty beach, pre-displacement morning, calm sea at the horizon, no story action.
@@ -950,7 +961,16 @@ STRICT RULE: this image contains ONLY the ${charCount} character${charCount === 
 ${positions}
 Every character is relaxed, hands at sides, no props held, no action, no interaction. Clear full-body view of each. Characters visually distinct and individually recognizable.${correctionNote ? `\n\nUSER CORRECTION FOR THIS ATTEMPT: ${correctionNote}\nApply this instruction — it overrides the defaults above where they conflict.` : ''}`;
 
-    const finalPrompt = buildFinalGeminiPrompt(lineupDesc, style, consistency, null, stripStyle, null, false, this._story.worldRules);
+    let finalPrompt = buildFinalGeminiPrompt(lineupDesc, style, consistency, null, stripStyle, null, false, this._story.worldRules);
+
+    // Vervang de generieke "No text"-sluiting door een expliciete naamlabel-instructie.
+    // De "No text"-regel staat altijd als laatste blok en zou de naamsinstructie anders overrulen.
+    if (charNames.length) {
+      finalPrompt = finalPrompt.replace(
+        'IMPORTANT: No text, no lettering, no speech bubbles, no captions anywhere in the image.',
+        `IMPORTANT — CHARACTER NAME LABELS REQUIRED: Write each character's name in large, legible text directly below their feet. Names (left to right): ${charNames.map(n => `"${n}"`).join(', ')}. These name labels are the ONLY text permitted in the image. No other lettering, captions, or speech bubbles.`
+      );
+    }
     if (debug) console.log('[NV] Kalibratie-prompt:\n', finalPrompt);
     return await geminiGenerateImage(finalPrompt, model, sig, null);
   }
