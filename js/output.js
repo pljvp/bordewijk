@@ -45,6 +45,7 @@ export class OutputView {
     this._calibrationDataUrl = null;
     this._regenCb = null;
     this._story = null;
+    this._pickerEl = null;
     this._setupLightbox();
     this._clear();
   }
@@ -148,6 +149,51 @@ export class OutputView {
   }
 
   clearOutput() { this._clear(); }
+
+  // ─── Voorbeeld-picker ────────────────────────────────────────────────────────
+
+  showExamplePicker(series, onSelect) {
+    if (this._pickerEl) {
+      this._pickerEl.remove();
+      this._pickerEl = null;
+      return;
+    }
+    const picker = document.createElement('div');
+    picker.className = 'example-picker';
+    picker.innerHTML = `<div class="example-picker-heading">Kies een serie</div><div class="example-picker-list"></div>`;
+    const list = picker.querySelector('.example-picker-list');
+    series.forEach(s => {
+      const btn = document.createElement('button');
+      btn.className = 'example-picker-btn';
+      btn.textContent = `${s.title} (${s.images.length})`;
+      btn.addEventListener('click', () => {
+        this._pickerEl?.remove();
+        this._pickerEl = null;
+        onSelect(s);
+      });
+      list.appendChild(btn);
+    });
+    this._pickerEl = picker;
+    this._el.parentElement.insertBefore(picker, this._el);
+  }
+
+  loadExamples(series) {
+    this._clear();
+    this.setMode('B', series.images.length);
+    const folder = series.folder;
+    series.images.forEach((filename) => {
+      const url = `voorbeeld/${encodeURIComponent(folder)}/${encodeURIComponent(filename)}`;
+      const title = _titleFromFilename(filename);
+      this.addImage({
+        dataUrl: url,
+        scene: { scene_title: title },
+        style: { w1: 0, w2: 0, w3: 0, realism: 0 },
+        caption: '',
+        filename,
+        isExample: true,
+      });
+    });
+  }
 
   showProgress(index, total, title) {
     if (this._el.querySelector('.output-empty')) this._el.innerHTML = '';
@@ -400,14 +446,14 @@ export class OutputView {
   // ─── Card builder ────────────────────────────────────────────────────────────
 
   _makeCard(data, compact, isPanel) {
-    const { index, dataUrl, scene, style, caption, sidetext, filename, prompt } = data;
+    const { index, dataUrl, scene, style, caption, sidetext, filename, prompt, isExample } = data;
     const title = scene.scene_title || (scene.panel_number
       ? `Panel ${scene.panel_number}`
       : `Scène ${index + 1}`);
     const styleInfo = `Gouden Eeuw ${Math.round(style.w1*100)}% / Jugendstil·Déco ${Math.round(style.w2*100)}% / Magisch Realisme ${Math.round(style.w3*100)}% / Realisme ${style.realism}`;
 
     const card = document.createElement('div');
-    card.className = 'image-card';
+    card.className = 'image-card' + (isExample ? ' is-example' : '');
     card.dataset.idx = index;
     if (isPanel && scene.panel_number) card.dataset.panel = scene.panel_number;
 
@@ -440,18 +486,18 @@ export class OutputView {
         </div>
         <div style="display:flex;gap:5px;flex-shrink:0">
           <button class="btn-sm btn-dl">↓ PNG</button>
-          <button class="btn-sm btn-regen" title="Opnieuw genereren met optionele bijsturing">↺</button>
+          ${isExample ? '' : '<button class="btn-sm btn-regen" title="Opnieuw genereren met optionele bijsturing">↺</button>'}
           <button class="btn-sm btn-remove-img" title="Verwijder deze afbeelding" style="color:var(--accent);border-color:rgba(232,89,74,.3)">✕</button>
         </div>
       </div>
-      <div class="regen-panel">
+      ${isExample ? '' : `<div class="regen-panel">
         <input class="regen-input" type="text" maxlength="200"
           placeholder="Optionele bijsturing — bijv. 'Drebbel links', 'donkerder licht', 'geen fiets'…">
         <div class="regen-actions">
           <button class="btn-sm regen-submit">↺ Genereer</button>
           <button class="btn-sm regen-cancel">Annuleer</button>
         </div>
-      </div>`;
+      </div>`}`;
 
     const imgEl = card.querySelector('img');
     imgEl.style.cursor = 'zoom-in';
@@ -466,17 +512,17 @@ export class OutputView {
       card.remove();
     });
 
-    card.querySelector('.btn-regen').addEventListener('click', () => {
+    card.querySelector('.btn-regen')?.addEventListener('click', () => {
       const panel = card.querySelector('.regen-panel');
       panel.classList.toggle('open');
       if (panel.classList.contains('open')) panel.querySelector('.regen-input').focus();
     });
 
-    card.querySelector('.regen-cancel').addEventListener('click', () => {
+    card.querySelector('.regen-cancel')?.addEventListener('click', () => {
       card.querySelector('.regen-panel').classList.remove('open');
     });
 
-    card.querySelector('.regen-submit').addEventListener('click', () => {
+    card.querySelector('.regen-submit')?.addEventListener('click', () => {
       const correctionNote = card.querySelector('.regen-input').value.trim();
       const submitBtn = card.querySelector('.regen-submit');
       const cancelBtn = card.querySelector('.regen-cancel');
@@ -703,10 +749,22 @@ export class OutputView {
       if (this._calibrationDataUrl) {
         zip.file(`${fc}_${this._makeDatetime()}_000_karakterreferentie.png`, this._calibrationDataUrl.split(',')[1], { base64: true });
       }
-      images.forEach(data => {
-        const b64 = data.dataUrl.split(',')[1];
+      for (const data of images) {
+        let b64;
+        if (data.isExample) {
+          try {
+            const res = await fetch(data.dataUrl);
+            const buf = await res.arrayBuffer();
+            const bytes = new Uint8Array(buf);
+            let bin = '';
+            for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+            b64 = btoa(bin);
+          } catch { continue; }
+        } else {
+          b64 = data.dataUrl.split(',')[1];
+        }
         zip.file(data.filename || `${fc}_${String(data.index + 1).padStart(3,'0')}.png`, b64, { base64: true });
-      });
+      }
       const count = images.length + (this._calibrationDataUrl ? 1 : 0);
       const blob = await zip.generateAsync({ type: 'blob' });
       const url = URL.createObjectURL(blob);
@@ -731,6 +789,15 @@ export class OutputView {
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function _titleFromFilename(filename) {
+  const stem = filename.replace(/\.png$/i, '').replace(/_c$/, '');
+  const skip = /^([A-Za-z]{2}|\d{3,6}|s\d.*|r\d.*|c)$/;
+  for (const part of stem.split('_')) {
+    if (!skip.test(part)) return part.replace(/-/g, ' ');
+  }
+  return stem.replace(/_/g, ' ');
+}
 
 function _escHtml(str) {
   return String(str)

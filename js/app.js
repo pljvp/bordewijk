@@ -11,6 +11,7 @@ import { generateStoryDef } from './story_creator.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('app-version').textContent = VERSION;
+  document.getElementById('over-version').textContent = VERSION.replace(/^v/, '');
   document.title = `Novelizer ${VERSION}`;
 
   // Actief verhaal is al persistent in storage (defaults naar DEFAULT_STORY_ID)
@@ -178,6 +179,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('btn-clear-output').addEventListener('click', () => {
     outputView.clearOutput();
+  });
+
+  // ─── Voorbeelden ──────────────────────────────────────────────────────────
+
+  let _exampleSeries = null;
+  document.getElementById('btn-examples').addEventListener('click', async () => {
+    if (!_exampleSeries) {
+      try {
+        const res = await fetch('voorbeeld/index.json');
+        const data = await res.json();
+        _exampleSeries = data.series;
+      } catch {
+        _exampleSeries = [];
+      }
+    }
+    outputView.showExamplePicker(_exampleSeries, series => {
+      outputView.loadExamples(series);
+      _autoOpenOutput();
+    });
   });
 
   // ─── Text options ──────────────────────────────────────────────────────────

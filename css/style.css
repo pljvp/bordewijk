@@ -1759,3 +1759,42 @@ mark {
   /* Gallery single column */
   .gallery-grid, .gn-grid-2, .gn-grid-3 { grid-template-columns: 1fr; }
 }
+
+/* ── Voorbeeld-picker ──────────────────────────────────────────────────────── */
+.example-picker {
+  padding: 10px 12px 6px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-card);
+}
+.example-picker-heading {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  margin-bottom: 6px;
+}
+.example-picker-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.example-picker-btn {
+  font-size: 11px;
+  padding: 3px 9px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.example-picker-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── Voorbeeld image-card badge ────────────────────────────────────────────── */
+.image-card.is-example .image-card-header::after {
+  content: 'voorbeeld';
+  font-size: 9px;
+  color: var(--text-muted);
+  margin-left: 6px;
+  opacity: .6;
+}

@@ -304,6 +304,7 @@
         <span class="col-title">Resultaat</span>
         <span class="col-sub">Gegenereerde afbeeldingen &amp; download</span>
       </div>
+      <button class="btn-sm col-header-action" id="btn-examples" title="Bekijk voorbeeldafbeeldingen" style="flex-shrink:0;margin-right:4px">◻ Voorbeelden</button>
       <button class="btn-sm col-header-action" id="btn-clear-output" title="Wis alle afbeeldingen" style="flex-shrink:0;margin-right:6px">Wis alles</button>
       <svg class="col-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
         <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -329,6 +330,7 @@
       <button class="modal-tab active" data-tab="settings">Instellingen</button>
       <button class="modal-tab" data-tab="apihelp">API-sleutels aanmaken</button>
       <button class="modal-tab" data-tab="segments">Tips &amp; Tricks</button>
+      <button class="modal-tab" data-tab="over">Over</button>
     </div>
     <div class="modal-tab-panel" id="tab-settings">
     <div class="modal-body">
@@ -550,6 +552,15 @@
       </div>
     </div><!-- /tab-apihelp -->
 
+    <div class="modal-tab-panel hidden" id="tab-over">
+      <div style="padding:16px 4px;line-height:1.7;font-size:13px;color:var(--text)">
+        <p>Deze applicatie is niet voor commercieel gebruik.</p>
+        <p>Het is een technische verkenning van de staat van AI anno 2026 — wat is er mogelijk, waar liggen de grenzen, hoe ver reikt de machine als vertolker van literatuur en beeldtaal?</p>
+        <p>Respect voor alle makers: auteurs, striptekenaren, illustratoren, regisseurs en iedereen wiens werk als inspiratie dient voor de modellen die hier worden ingezet.</p>
+        <p style="margin-top:20px;color:var(--text-muted);font-size:11px">Novelizer · v<span id="over-version"></span> · 2026</p>
+      </div>
+    </div><!-- /tab-over -->
+
     <div class="modal-footer">
       <button class="btn btn-danger" id="btn-clear-all">Wis alles</button>
       <button class="btn" id="modal-close-btn" onclick="document.getElementById('modal-settings').classList.add('hidden')">Sluiten</button>
@@ -566,7 +577,7 @@
      Bij versie-bump: V hieronder + ?v= op de app.js regel eronder + VERSION in generator.js. -->
 <script>
   (function () {
-    const V = '037'; // ← versie — ook bijwerken: app.js src hieronder + generator.js → VERSION
+    const V = '038'; // ← versie — ook bijwerken: app.js src hieronder + generator.js → VERSION
     const mods = [
       'storage', 'api', 'generator', 'widget_triangle',
       'story_view', 'output', 'story_library', 'story_creator',
@@ -583,7 +594,7 @@
   })();
 </script>
 <!-- App — versie in src hieronder synchroniseren met V hierboven -->
-<script type="module" src="js/app.js?v=037"></script>
+<script type="module" src="js/app.js?v=038"></script>
 
 <script>
   // ── Accordion: max 1 sectie open tegelijk ───────────────────────────────
