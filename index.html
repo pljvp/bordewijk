@@ -553,10 +553,13 @@
     </div><!-- /tab-apihelp -->
 
     <div class="modal-tab-panel hidden" id="tab-over">
-      <div style="padding:16px 4px;line-height:1.8;font-size:13px;color:var(--text)">
-        <p>Deze applicatie is niet voor commercieel gebruik. Het is een technische poging om de stand van AI anno 2026 te laten zien. Respect voor alle makers van verhalen, strips en wat dies meer zij.</p>
-        <p style="margin-top:14px;color:var(--text-muted);font-style:italic">This app is not for commercial use. It is a technical attempt to show the state of AI anno 2026. Respect to all creators of stories, comics, and what-not.</p>
-        <p style="margin-top:20px;color:var(--text-muted);font-size:11px">Novelizer · v<span id="over-version"></span> · 2026</p>
+      <div class="modal-body">
+        <div class="modal-section">
+          <div class="modal-section-label">Over deze applicatie</div>
+          <p class="apihelp-note">Deze applicatie is niet voor commercieel gebruik. Het is een technische poging om de stand van AI anno 2026 te laten zien. Respect voor alle makers van verhalen, strips en wat dies meer zij.</p>
+          <p class="apihelp-note" style="font-style:italic;color:var(--text-muted)">This app is not for commercial use. It is a technical attempt to show the state of AI anno 2026. Respect to all creators of stories, comics, and what-not.</p>
+          <p class="apihelp-note" style="margin-top:12px;font-size:11px;color:var(--text-muted)">Novelizer · v<span id="over-version"></span> · 2026</p>
+        </div>
       </div>
     </div><!-- /tab-over -->
 
@@ -576,7 +579,7 @@
      Bij versie-bump: V hieronder + ?v= op de app.js regel eronder + VERSION in generator.js. -->
 <script>
   (function () {
-    const V = '038'; // ← versie — ook bijwerken: app.js src hieronder + generator.js → VERSION
+    const V = '040'; // ← versie — ook bijwerken: app.js src hieronder + generator.js → VERSION
     const mods = [
       'storage', 'api', 'generator', 'widget_triangle',
       'story_view', 'output', 'story_library', 'story_creator',
@@ -593,7 +596,7 @@
   })();
 </script>
 <!-- App — versie in src hieronder synchroniseren met V hierboven -->
-<script type="module" src="js/app.js?v=038"></script>
+<script type="module" src="js/app.js?v=040"></script>
 
 <script>
   // ── Accordion: max 1 sectie open tegelijk ───────────────────────────────

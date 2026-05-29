@@ -6,7 +6,7 @@ export default {
   title: 'Verplaatsing van elementen',
   author: 'F. Bordewijk',
   year: 1956,
-  genre: 'roman',
+  genre: 'kort verhaal',
   writerStyle: 'laconiek, droog, vervreemdend, journalistiek',
   fileCode: 'VE',
   sourceUrl: 'https://www.dbnl.org/tekst/bord001stud01_01/bord001stud01_01_0005.php',
