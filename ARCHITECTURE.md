@@ -37,6 +37,7 @@ novelizer/js/
 │   ├── bordewijk_verplaatsing.js   ← StoryDef Verplaatsing van elementen (VE)
 │   ├── de_bioscoop.js              ← StoryDef De Bioscoop (BC)
 │   ├── bolifur_saga.js             ← StoryDef De Saga van Bolifur de Paling (BS)
+│   ├── koning_pinteman.js          ← StoryDef Koning Pintenman (KP)
 │   └── index.js                    ← STORY_LIBRARY array + DEFAULT_STORY_ID
 ├── story_library.js                ← getLibraryStories(), addUserStory(), getActiveStory()
 ├── story_creator.js                ← generateStoryDef(text, signal) via Claude
@@ -285,6 +286,23 @@ Elke stripstijl heeft een `COMPOSITION EXECUTION`-blok in zijn `PANELS/FRAMES`-s
 4. **Genereer en keur de kalibratie goed** — bij de eerste generatierun verschijnt de karakteropstelling. Keur goed of stuur bij met vrije tekst.
 
 5. **Markeer paragrafen en genereer** — selecteer scènes en kies modus A, B of C.
+
+---
+
+## Voorbeeld-galerie
+
+Knop "◻ Voorbeelden" in de header van de resultatenkolom laadt vooraf gegenereerde afbeeldingen uit de `voorbeeld/`-map als gewone gallery-cards.
+
+**Manifest:** `voorbeeld/index.json` — statisch JSON-bestand met alle series en hun filenames. Nodig omdat GitHub Pages geen directory listings geeft. Handmatig bijhouden bij nieuwe series.
+
+**Werking:**
+1. Eerste klik → `fetch('voorbeeld/index.json')` → series gecached in `_exampleSeries`
+2. Picker toont serie-knoppen; klik → `outputView.loadExamples(series)`
+3. `loadExamples` roept `addImage` aan met `isExample: true` en de URL als `dataUrl`
+4. `_makeCard` herkent `isExample` → geen ↺-knop, geen regen-panel; badge "voorbeeld" in header
+5. ZIP-download: voorbeeld-URLs worden via `fetch` als base64 opgehaald
+
+**Titel uit bestandsnaam:** `_titleFromFilename(filename)` — slaat fileCode (2 chars), datums, volgnummers en stijlparameters over; eerste resterende segment wordt de titel.
 
 ---
 

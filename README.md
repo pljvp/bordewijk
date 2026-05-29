@@ -44,13 +44,14 @@ Kiesbaar via de instellingen-modal. Standaard: het gratis Flash-model. Gegeneree
 
 ## Verhaalbibliotheek
 
-De meest linkse kolom toont alle beschikbare verhalen. De bibliotheek bevat nu drie verhalen:
+De meest linkse kolom toont alle beschikbare verhalen. De bibliotheek bevat nu vier verhalen:
 
 | Verhaal | Auteur | Code |
 |---|---|---|
 | Verplaatsing van elementen | F. Bordewijk | `VE` |
 | De Bioscoop | F. Bordewijk | `BC` |
 | De Saga van Bolifur de Paling | Anoniem | `BS` |
+| Koning Pintenman | Band Zonder Banaan | `KP` |
 
 Klik op een kaart om van verhaal te wisselen. Alle opgeslagen data (consistentieprofiel, markeringen, stijlproef) is per verhaal gescheiden.
 
@@ -136,6 +137,14 @@ Een rendering-overlay bovenop de stijlmix, die de tekenwijze bepaalt. De invloed
 
 ---
 
+## Voorbeelden bekijken
+
+Knop **◻ Voorbeelden** in de header van de resultatenkolom. Opent een picker met alle beschikbare series uit de `voorbeeld/`-map. Klik op een serie om de afbeeldingen als galerij te laden — zonder ↺-regeneratieknop. ZIP-download werkt ook voor voorbeeldafbeeldingen.
+
+De manifest staat in `voorbeeld/index.json` — voeg een nieuwe serie toe door het JSON-bestand te updaten.
+
+---
+
 ## Exporteren
 
 **PNG per afbeelding** — knop "↓ PNG" op elke afbeeldingskaart.
@@ -164,6 +173,7 @@ novelizer/
 │   │   ├── bordewijk_verplaatsing.js
 │   │   ├── de_bioscoop.js
 │   │   ├── bolifur_saga.js
+│   │   ├── koning_pinteman.js
 │   │   └── index.js
 │   ├── api.js
 │   ├── app.js
@@ -178,7 +188,8 @@ novelizer/
 │   ├── style_defs.js
 │   └── widget_triangle.js
 └── voorbeeld/
-    └── (voorbeeldafbeeldingen per serie)
+    ├── index.json                  ← manifest met alle series en filenames
+    └── {serie-naam}/               ← afbeeldingen per serie
 ```
 
 ---
@@ -201,3 +212,11 @@ novelizer/
 - **Gemini Image API** — beeldgeneratie (Flash of Imagen 4)
 - **Canvas API** — composite PNG export (tekst + afbeelding)
 - **localStorage** — persistentie van sleutels, stijl, markeringen en consistentieprofielen
+
+---
+
+## Over
+
+Deze applicatie is niet voor commercieel gebruik. Het is een technische poging om de stand van AI anno 2026 te laten zien. Respect voor alle makers van verhalen, strips en wat dies meer zij.
+
+*This app is not for commercial use. It is a technical attempt to show the state of AI anno 2026. Respect to all creators of stories, comics, and what-not.*
