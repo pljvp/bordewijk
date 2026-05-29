@@ -6,7 +6,7 @@ import { STYLE_DEFS } from './style_defs.js';
 import bordewijkStory from './stories/bordewijk_verplaatsing.js';
 import { STRIP_STYLES } from './strip_styles.js';
 
-export const VERSION = 'v0.044';
+export const VERSION = 'v0.045';
 
 // ─── Hulpfuncties ────────────────────────────────────────────────────────────
 

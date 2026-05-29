@@ -116,7 +116,7 @@
     },
     {
       "title": "Koning Pintenman — 10 afbeeldingen",
-      "folder": "Graphic Novel Koning Pinteman 10 imgs",
+      "folder": "Koning Pinteman Graphic Novel  10 imgs",
       "images": [
         "KP_260529_2221_000_karakterreferentie.png",
         "KP_260529_2216_001_het-verlangen_§1_s5-13-83_r25_c.png",
@@ -129,6 +129,21 @@
         "KP_260529_2219_008_hangen-aan-de-bar_§5_s5-13-83_r25_c.png",
         "KP_260529_2220_009_de-herinnering-aan-de-meester_§5-6_s5-13-83_r25_c.png",
         "KP_260529_2220_010_onze-god_§6_s5-13-83_r25_c.png"
+      ]
+    },
+    {
+      "title": "Welcome to the Internet — 8 afbeeldingen",
+      "folder": "Welcome to the internet Graphic Novel 8 imgs",
+      "images": [
+        "WI_260529_2347_000_karakterreferentie.png",
+        "WI_260529_2341_001_welkom-aan-de-poort_§1_s6-10-84_r25.png",
+        "WI_260529_2341_002_het-menu-van-alles_§2-3_s6-10-84_r25.png",
+        "WI_260529_2342_003_pasta-en-dood-naast-elkaar_§4_s6-10-84_r25.png",
+        "WI_260529_2343_004_ongewenste-post_§5_s6-10-84_r25.png",
+        "WI_260529_2343_006_het-aanbod_§8_s6-10-84_r25.png",
+        "WI_260529_2344_007_hoe-het-begon_§9-10-11_s6-10-84_r25.png",
+        "WI_260529_2344_008_het-plan-onthult-zich_§12-13_s6-10-84_r25.png",
+        "WI_260529_2345_009_alles-altijd_§14_s6-10-84_r25.png"
       ]
     }
   ]
