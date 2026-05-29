@@ -44,11 +44,12 @@ Kiesbaar via de instellingen-modal. Standaard: het gratis Flash-model. Gegeneree
 
 ## Verhaalbibliotheek
 
-De meest linkse kolom toont alle beschikbare verhalen. De bibliotheek bevat nu twee verhalen:
+De meest linkse kolom toont alle beschikbare verhalen. De bibliotheek bevat nu drie verhalen:
 
 | Verhaal | Auteur | Code |
 |---|---|---|
 | Verplaatsing van elementen | F. Bordewijk | `VE` |
+| De Bioscoop | F. Bordewijk | `BC` |
 | De Saga van Bolifur de Paling | Anoniem | `BS` |
 
 Klik op een kaart om van verhaal te wisselen. Alle opgeslagen data (consistentieprofiel, markeringen, stijlproef) is per verhaal gescheiden.
@@ -161,6 +162,7 @@ novelizer/
 ├── js/
 │   ├── stories/
 │   │   ├── bordewijk_verplaatsing.js
+│   │   ├── de_bioscoop.js
 │   │   ├── bolifur_saga.js
 │   │   └── index.js
 │   ├── api.js
@@ -176,8 +178,7 @@ novelizer/
 │   ├── style_defs.js
 │   └── widget_triangle.js
 └── voorbeeld/
-    ├── bolifur_saga.md
-    └── de_saga_van_bolifur_de_paling.json
+    └── (voorbeeldafbeeldingen per serie)
 ```
 
 ---
@@ -187,7 +188,7 @@ novelizer/
 - Gebruik **`gemini-3.1-flash-image-preview`** tijdens ontwikkeling (gratis, snel)
 - `?dev=1` in de URL: debug-paneel met raw prompts + "📋 Print als JS" in de creator-modal
 - `storage.js` is de enige plek waar `localStorage` wordt aangeraakt
-- ES modules cachen agressief — gebruik **Ctrl+Shift+R** (hard reload) na wijzigingen in `storage.js` of `js/stories/`
+- Cache-busting via importmap: bij versie-bump `V` in het inline script in `index.html` + `?v=` op de app.js-regel eronder + `VERSION` in `generator.js` aanpassen — daarna **gewone refresh** volstaat, geen hard reload nodig
 - Nieuw verhaal als permanent JS-bestand: aanmaken via creator-modal (`?dev=1`) → "Print als JS" → plak in `js/stories/{id}.js` → registreer in `js/stories/index.js`
 
 ---

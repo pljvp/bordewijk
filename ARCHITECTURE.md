@@ -35,6 +35,7 @@ export default {
 novelizer/js/
 ├── stories/
 │   ├── bordewijk_verplaatsing.js   ← StoryDef Verplaatsing van elementen (VE)
+│   ├── de_bioscoop.js              ← StoryDef De Bioscoop (BC)
 │   ├── bolifur_saga.js             ← StoryDef De Saga van Bolifur de Paling (BS)
 │   └── index.js                    ← STORY_LIBRARY array + DEFAULT_STORY_ID
 ├── story_library.js                ← getLibraryStories(), addUserStory(), getActiveStory()
@@ -287,6 +288,35 @@ Elke stripstijl heeft een `COMPOSITION EXECUTION`-blok in zijn `PANELS/FRAMES`-s
 
 ---
 
+## Cache-busting (importmap)
+
+ES modules worden door browsers agressief gecached op URL. Om te voorkomen dat gebruikers na een versie-update verouderde modules laden (en handmatig cache moeten clearen, wat ook localStorage wist), gebruikt de app een dynamisch gegenereerde importmap.
+
+**Werking:**
+
+```html
+<!-- index.html, onderaan <body> -->
+<script>
+  (function () {
+    const V = '036'; // ← versie-bump hier + ?v= hieronder + generator.js → VERSION
+    // ... bouwt importmap op ...
+    // Alle /js/*.js en /js/stories/*.js → /js/*.js?v=036
+  })();
+</script>
+<script type="module" src="js/app.js?v=036"></script>
+```
+
+De importmap wordt synchroon vóór het module script in de DOM ingevoegd. Daarna laden alle `import`-statements in de module-keten automatisch de versioned URL — de browser haalt altijd de juiste versie op zonder hard reload.
+
+**Bij een versie-bump drie plekken bijwerken** (alle drie in of vlak bij `index.html`):
+1. `const V = '036'` in het inline script
+2. `?v=036` op de statische `<script type="module">` tag
+3. `VERSION = 'v0.036'` in `generator.js` (bepaalt de badge in de UI)
+
+**Gevolg:** API-sleutels (opgeslagen in `localStorage`) gaan nooit verloren door versie-updates — de browser hoeft nooit handmatig gecleard te worden.
+
+---
+
 ## Tech stack
 
 - **HTML + CSS + JS** — losse bestanden, geen frameworks, geen build-stap
@@ -519,7 +549,7 @@ De stijlmix behoudt zijn rol (kleurpalet, sfeer, compositie) op elk niveau — a
 │  [6] CHARACTER SHEET + WORLD CONTEXT       (altijd)                     │
 │  [7] COMPOSITION directive                 (Mode C only)                │
 │  [8] SCENE CONTENT                         (altijd)                     │
-│  [9] TEXT-instructie                       (ballon / onderschrift / geen│
+│  [9] TEXT-instructie                       (ballon / charLabels / geen) │
 └─────────────────────────────────────────────────────────────────────────┘
 
 Bijzonder geval realism = 100 — volgorde wijzigt:

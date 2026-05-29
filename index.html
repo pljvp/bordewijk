@@ -281,6 +281,7 @@
         <div class="generate-status" id="generate-status"></div>
         <button id="btn-stop" style="display:none">■ Stop</button>
         <button id="btn-test-styles" class="btn-style-test" title="Genereer dezelfde scène in Gouden Eeuw, Jugendstil·Déco en Magisch Realisme om stijlverschillen te vergelijken">Test stijlmix en uitvoering (3×)</button>
+        <button id="btn-test-goudeneeuw" class="btn-style-test" title="Genereer dezelfde scène 5× in 100% Gouden Eeuw: alle uitvoeringsniveaus (flat/geïllustreerd/semi/realistisch/foto) — geen stripstijl">Test Gouden Eeuw uitvoering (5×)</button>
         <button id="btn-test-stripstijl" class="btn-style-test" title="Genereer dezelfde scène 8× met elke stripstijl-invloed — neutrale stijlmix, uitvoering Geïllustreerd">Test stripstijl (8×)</button>
       </div>
 
@@ -561,8 +562,28 @@
         integrity="sha512-XMVd28F1oH/O71fzwBnV7HucLxVwtxf26XV8P4wPk26EDxuGZ91N8bsOttmnomcCD3CS5ZMRL50H0GgOHvegtg=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
-<!-- App -->
-<script type="module" src="js/app.js?v=6"></script>
+<!-- Cache-busting voor ES modules.
+     Bij versie-bump: V hieronder + ?v= op de app.js regel eronder + VERSION in generator.js. -->
+<script>
+  (function () {
+    const V = '036'; // ← versie — ook bijwerken: app.js src hieronder + generator.js → VERSION
+    const mods = [
+      'storage', 'api', 'generator', 'widget_triangle',
+      'story_view', 'output', 'story_library', 'story_creator',
+      'style_defs', 'strip_styles', 'story_data'
+    ];
+    const stories = ['index', 'bordewijk_verplaatsing', 'de_bioscoop', 'bolifur_saga'];
+    const imp = {};
+    mods.forEach(m    => { imp[`/js/${m}.js`]          = `/js/${m}.js?v=${V}`; });
+    stories.forEach(s => { imp[`/js/stories/${s}.js`]  = `/js/stories/${s}.js?v=${V}`; });
+    const el = document.createElement('script');
+    el.type = 'importmap';
+    el.textContent = JSON.stringify({ imports: imp });
+    document.currentScript.insertAdjacentElement('afterend', el);
+  })();
+</script>
+<!-- App — versie in src hieronder synchroniseren met V hierboven -->
+<script type="module" src="js/app.js?v=036"></script>
 
 <script>
   // ── Accordion: max 1 sectie open tegelijk ───────────────────────────────

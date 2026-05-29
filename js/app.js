@@ -303,8 +303,7 @@ document.addEventListener('DOMContentLoaded', () => {
     generating = false;
     btnGenerate.disabled = false;
     btnGenerate.textContent = 'Genereer';
-    btnTestStyles.disabled = false;
-    btnTestStripstijl.disabled = false;
+    _enableTestBtns();
     btnStop.style.display = 'none';
     _setStatus('');
     generator._handlers = {};
@@ -313,18 +312,21 @@ document.addEventListener('DOMContentLoaded', () => {
   // ─── Stijltest ────────────────────────────────────────────────────────────
 
   const btnTestStyles     = document.getElementById('btn-test-styles');
+  const btnTestGoudenEeuw = document.getElementById('btn-test-goudeneeuw');
   const btnTestStripstijl = document.getElementById('btn-test-stripstijl');
+
+  const _allTestBtns = [btnTestStyles, btnTestGoudenEeuw, btnTestStripstijl];
+  const _disableTestBtns = () => _allTestBtns.forEach(b => { b.disabled = true; });
+  const _enableTestBtns  = () => _allTestBtns.forEach(b => { b.disabled = false; });
 
   btnTestStyles.addEventListener('click', async () => {
     if (!_checkKeys()) return;
     generating = true;
     btnGenerate.disabled = true;
-    btnTestStyles.disabled = true;
-    btnTestStripstijl.disabled = true;
+    _disableTestBtns();
     btnStop.style.display = 'block';
 
     outputView.setMode('B', 3);
-    outputView.clearOutput();
 
     generator
       .on('consistency-start', () => {
@@ -357,13 +359,71 @@ document.addEventListener('DOMContentLoaded', () => {
         outputView.showDone(true);
         generating = false;
         btnGenerate.disabled = false;
-        btnTestStyles.disabled = false;
-        btnTestStripstijl.disabled = false;
+        _enableTestBtns();
         btnStop.style.display = 'none';
         generator._handlers = {};
       });
 
     await generator.generateStyleTest();
+  });
+
+  // ─── Gouden Eeuw uitvoeringstest ─────────────────────────────────────────────
+
+  btnTestGoudenEeuw.addEventListener('click', async () => {
+    if (!_checkKeys()) return;
+    generating = true;
+    btnGenerate.disabled = true;
+    _disableTestBtns();
+    btnStop.style.display = 'block';
+
+    outputView.setMode('B', 5);
+    outputView.showConsistencyProgress();
+
+    const _resetGoudenEeuwButtons = () => {
+      generating = false;
+      btnGenerate.disabled = false;
+      _enableTestBtns();
+      btnStop.style.display = 'none';
+      generator._handlers = {};
+    };
+
+    generator
+      .on('consistency-start', () => {
+        _debugLog('Consistentieprofiel genereren…');
+      })
+      .on('consistency-ready', ({ consistency }) => {
+        _updateConsistencyStatus();
+        _debugLog('Consistentieprofiel gereed');
+      })
+      .on('start', ({ total }) => {
+        outputView.hideConsistencyProgress();
+        _debugLog(`Gouden Eeuw-test gestart: ${total} varianten`);
+      })
+      .on('progress', ({ index, total, title }) => {
+        outputView.showProgress(index, total, title);
+      })
+      .on('image', data => {
+        _autoOpenOutput();
+        outputView.addImage(data);
+        _debugLog(`Gouden Eeuw-test variant ${data.index + 1} gereed.\nPrompt:\n${data.prompt}`);
+      })
+      .on('image-error', ({ index, message }) => {
+        outputView.addError(index, 5, message);
+      })
+      .on('error', ({ message }) => {
+        outputView.addError(0, 5, message);
+      })
+      .on('done', () => {
+        outputView.showDone(true);
+        _resetGoudenEeuwButtons();
+      });
+
+    try {
+      await generator.generateGoudenEeuwTest();
+    } catch (err) {
+      outputView.addError(0, 5, err.message);
+      _resetGoudenEeuwButtons();
+    }
   });
 
   // ─── Stripstijltest ──────────────────────────────────────────────────────────
@@ -372,12 +432,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!_checkKeys()) return;
     generating = true;
     btnGenerate.disabled = true;
-    btnTestStyles.disabled = true;
-    btnTestStripstijl.disabled = true;
+    _disableTestBtns();
     btnStop.style.display = 'block';
 
     outputView.setMode('B', 8);
-    outputView.clearOutput();
     // Show immediate feedback — hides once the generator emits 'start'
     outputView.showConsistencyProgress();
 
@@ -387,8 +445,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const _resetStripstijlButtons = () => {
       generating = false;
       btnGenerate.disabled = false;
-      btnTestStyles.disabled = false;
-      btnTestStripstijl.disabled = false;
+      _enableTestBtns();
       btnStop.style.display = 'none';
       generator._handlers = {};
     };

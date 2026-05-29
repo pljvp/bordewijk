@@ -6,7 +6,7 @@ import { STYLE_DEFS } from './style_defs.js';
 import bordewijkStory from './stories/bordewijk_verplaatsing.js';
 import { STRIP_STYLES } from './strip_styles.js';
 
-export const VERSION = 'v0.035';
+export const VERSION = 'v0.036';
 
 // ─── Hulpfuncties ────────────────────────────────────────────────────────────
 
@@ -221,7 +221,7 @@ Write 60–80 words in English. Reply with the scene content description only �
 }
 
 // Bouwt de definitieve Gemini-prompt: stijlblok EERST, dan wereld + karakter + scène
-function buildFinalGeminiPrompt(claudePrompt, style, consistencyProfile, balloonText, stripStyle, scene, hasStyleProof = false, worldRules = '') {
+function buildFinalGeminiPrompt(claudePrompt, style, consistencyProfile, balloonText, stripStyle, scene, hasStyleProof = false, worldRules = '', charLabels = null) {
   const hasStrip = !!(stripStyle && STRIP_STYLES[stripStyle]);
   let styleDirective = buildStyleDirective(style);
 
@@ -311,6 +311,8 @@ function buildFinalGeminiPrompt(claudePrompt, style, consistencyProfile, balloon
 
   if (balloonText) {
     parts.push(`SPEECH BUBBLE: Include exactly one speech bubble in the image containing the text: "${balloonText}". Draw it in the dominant art style with a tail pointing at the speaking character. No other text or lettering anywhere.`);
+  } else if (charLabels && charLabels.length) {
+    parts.push(`IMPORTANT — CHARACTER NAME LABELS REQUIRED: Write each character's name in large, legible text directly below their feet. Names (left to right): ${charLabels.map(n => `"${n}"`).join(', ')}. These name labels are the ONLY text permitted in the image. No other lettering, captions, or speech bubbles.`);
   } else {
     parts.push('IMPORTANT: No text, no lettering, no speech bubbles, no captions anywhere in the image.');
   }
@@ -961,16 +963,7 @@ STRICT RULE: this image contains ONLY the ${charCount} character${charCount === 
 ${positions}
 Every character is relaxed, hands at sides, no props held, no action, no interaction. Clear full-body view of each. Characters visually distinct and individually recognizable.${correctionNote ? `\n\nUSER CORRECTION FOR THIS ATTEMPT: ${correctionNote}\nApply this instruction — it overrides the defaults above where they conflict.` : ''}`;
 
-    let finalPrompt = buildFinalGeminiPrompt(lineupDesc, style, consistency, null, stripStyle, null, false, this._story.worldRules);
-
-    // Vervang de generieke "No text"-sluiting door een expliciete naamlabel-instructie.
-    // De "No text"-regel staat altijd als laatste blok en zou de naamsinstructie anders overrulen.
-    if (charNames.length) {
-      finalPrompt = finalPrompt.replace(
-        'IMPORTANT: No text, no lettering, no speech bubbles, no captions anywhere in the image.',
-        `IMPORTANT — CHARACTER NAME LABELS REQUIRED: Write each character's name in large, legible text directly below their feet. Names (left to right): ${charNames.map(n => `"${n}"`).join(', ')}. These name labels are the ONLY text permitted in the image. No other lettering, captions, or speech bubbles.`
-      );
-    }
+    const finalPrompt = buildFinalGeminiPrompt(lineupDesc, style, consistency, null, stripStyle, null, false, this._story.worldRules, charNames.length ? charNames : null);
     if (debug) console.log('[NV] Kalibratie-prompt:\n', finalPrompt);
     return await geminiGenerateImage(finalPrompt, model, sig, null);
   }
@@ -1024,6 +1017,72 @@ Every character is relaxed, hands at sides, no props held, no action, no interac
             style: { ...v },
             caption: v.label,
             filename: `${this._story?.fileCode || 'WK'}_styletest_${String(i + 1).padStart(3, '0')}.png`,
+            prompt: finalPrompt,
+            isAutoProof: false,
+          });
+        } catch (err) {
+          if (!sig.aborted) this._emit('image-error', { index: i, message: err.message });
+        }
+      }
+      this._emit('done', {});
+    } catch (err) {
+      if (!sig.aborted) {
+        this._emit('error', { message: err.message });
+        this._emit('done', {});
+      }
+    }
+  }
+
+  // ─── Gouden Eeuw uitvoeringstest: 5 niveaus, geen stripstijl ────────────────
+  async generateGoudenEeuwTest() {
+    this._ac = new AbortController();
+    const sig = this._ac.signal;
+    const model = storage.getGeminiModel();
+    const debug = storage.getDebugMode();
+
+    const variants = [
+      { w1: 1, w2: 0, w3: 0, realism: 0,   label: '100% Gouden Eeuw — Flat grafisch' },
+      { w1: 1, w2: 0, w3: 0, realism: 25,  label: '100% Gouden Eeuw — Geïllustreerd' },
+      { w1: 1, w2: 0, w3: 0, realism: 50,  label: '100% Gouden Eeuw — Semi-realistisch' },
+      { w1: 1, w2: 0, w3: 0, realism: 75,  label: '100% Gouden Eeuw — Realistisch' },
+      { w1: 1, w2: 0, w3: 0, realism: 100, label: '100% Gouden Eeuw — Fotografisch' },
+    ];
+
+    try {
+      let consistency = storage.getConsistency();
+      if (!consistency) {
+        this._emit('consistency-start', {});
+        consistency = await this._generateConsistencyProfile(sig, debug);
+        storage.setConsistency(consistency);
+        storage.setConsistencyTs(new Date().toISOString());
+        this._emit('consistency-ready', { consistency });
+      }
+
+      const sceneProps = consistency ? this._extractSceneProps(consistency) : '';
+      const charAppearances = storage.getCharAppearances() || '';
+      const [scene] = await this._getScenesA('claude', [], sig, debug, sceneProps);
+      const contentPrompt = buildImagePromptRequest(scene, charAppearances, sceneProps);
+      if (debug) console.log('[NV] Gouden Eeuw-test scène:', contentPrompt);
+      const claudeContent = await claudeComplete([{ role: 'user', content: contentPrompt }], '', sig);
+
+      this._emit('start', { total: variants.length, mode: 'B' });
+
+      for (let i = 0; i < variants.length; i++) {
+        if (sig.aborted) break;
+        const v = variants[i];
+        this._emit('progress', { index: i, total: variants.length, title: v.label });
+        try {
+          // Geen stripstijl — test puur de uitvoering van Gouden Eeuw
+          const finalPrompt = buildFinalGeminiPrompt(claudeContent.trim(), v, consistency, null, undefined, undefined, false, this._story.worldRules);
+          if (debug) console.log(`[NV] Gouden Eeuw-test variant ${i + 1} prompt:\n`, finalPrompt);
+          const dataUrl = await geminiGenerateImage(finalPrompt, model, sig, null);
+          this._emit('image', {
+            index: i,
+            dataUrl,
+            scene: { ...scene, scene_title: v.label },
+            style: { ...v },
+            caption: v.label,
+            filename: `${this._story?.fileCode || 'WK'}_goudeneeuwtest_${String(i + 1).padStart(3, '0')}.png`,
             prompt: finalPrompt,
             isAutoProof: false,
           });
