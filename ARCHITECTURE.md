@@ -16,7 +16,7 @@ export default {
   title: 'Verplaatsing van elementen',
   author: 'F. Bordewijk',
   year: 1956,                         // jaar van de verhaaltijd (niet publicatie)
-  genre: 'roman',
+  genre: 'kort verhaal',
   fileCode: 'VE',                     // 2 hoofdletters → bestandsnaamprefix (VE_001_…)
   writerStyle: 'laconiek, droog, vervreemdend, journalistiek',
   sourceUrl: 'https://…',             // optioneel — klikbare link in header
@@ -38,6 +38,7 @@ novelizer/js/
 │   ├── de_bioscoop.js              ← StoryDef De Bioscoop (BC)
 │   ├── bolifur_saga.js             ← StoryDef De Saga van Bolifur de Paling (BS)
 │   ├── koning_pinteman.js          ← StoryDef Koning Pintenman (KP)
+│   ├── welcome_to_the_internet.js  ← StoryDef Welcome to the Internet (WI)
 │   └── index.js                    ← STORY_LIBRARY array + DEFAULT_STORY_ID
 ├── story_library.js                ← getLibraryStories(), addUserStory(), getActiveStory()
 ├── story_creator.js                ← generateStoryDef(text, signal) via Claude
@@ -45,7 +46,7 @@ novelizer/js/
 ├── story_view.js                   ← verhaalweergave; setStory(def) voor live-wissel
 ├── generator.js                    ← setStory(def), this._story, story-agnostisch
 ├── storage.js                      ← setActiveStoryId(id), namespaced helpers
-├── output.js                       ← galerij, composite PNG export, ZIP download
+├── output.js                       ← galerij, voorbeeld-picker, composite PNG export, ZIP
 └── app.js                          ← bibliotheek-UI, _switchStory(), creator-modal
 ```
 
@@ -303,6 +304,20 @@ Knop "◻ Voorbeelden" in de header van de resultatenkolom laadt vooraf gegenere
 5. ZIP-download: voorbeeld-URLs worden via `fetch` als base64 opgehaald
 
 **Titel uit bestandsnaam:** `_titleFromFilename(filename)` — slaat fileCode (2 chars), datums, volgnummers en stijlparameters over; eerste resterende segment wordt de titel.
+
+---
+
+## JSON-parsing (generator.js)
+
+Claude's JSON-output bevat soms trailing commas of letterlijke newlines in strings. De parsing-laag in `generator.js` vangt dit op:
+
+```javascript
+_sanitizeJson(s)           // trailing commas + newlines/tabs in strings
+safeParseJsonArray(raw)    // modus B/C: array van scène-objecten
+safeParseJsonObject(raw)   // modus A: enkel scène-object
+```
+
+Beide `safe*`-functies proberen eerst `JSON.parse`, dan `JSON.parse(_sanitizeJson(...))`, en loggen de fout bij blijvende mislukking. `safeParseJsonObject` is toegevoegd in v0.043 — modus A gebruikte hiervoor kale `JSON.parse`, wat crashte op trailing commas in complexe verhalen.
 
 ---
 

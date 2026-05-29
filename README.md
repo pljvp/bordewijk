@@ -1,6 +1,6 @@
 # Novelizer
 
-Interactieve webapplicatie die literaire teksten omzet naar illustraties en grafische romans, met behulp van de Claude API (Anthropic) en de Gemini Image API (Google).
+Interactieve webapplicatie die literaire teksten en poëzie omzet naar illustraties en grafische romans, met behulp van de Claude API (Anthropic) en de Gemini Image API (Google).
 
 Standaardverhaal: *Verplaatsing van elementen* — F. Bordewijk (1956).
 
@@ -44,14 +44,15 @@ Kiesbaar via de instellingen-modal. Standaard: het gratis Flash-model. Gegeneree
 
 ## Verhaalbibliotheek
 
-De meest linkse kolom toont alle beschikbare verhalen. De bibliotheek bevat nu vier verhalen:
+De meest linkse kolom toont alle beschikbare verhalen. De bibliotheek bevat nu vijf verhalen:
 
-| Verhaal | Auteur | Code |
-|---|---|---|
-| Verplaatsing van elementen | F. Bordewijk | `VE` |
-| De Bioscoop | F. Bordewijk | `BC` |
-| De Saga van Bolifur de Paling | Anoniem | `BS` |
-| Koning Pintenman | Band Zonder Banaan | `KP` |
+| Verhaal | Auteur | Code | Genre |
+|---|---|---|---|
+| Verplaatsing van elementen | F. Bordewijk | `VE` | kort verhaal |
+| De Bioscoop | F. Bordewijk | `BC` | kort verhaal (1919) |
+| De Saga van Bolifur de Paling | Anoniem | `BS` | poëzie |
+| Koning Pintenman | Band Zonder Banaan | `KP` | poëzie |
+| Welcome to the Internet | Bo Burnham | `WI` | poëzie |
 
 Klik op een kaart om van verhaal te wisselen. Alle opgeslagen data (consistentieprofiel, markeringen, stijlproef) is per verhaal gescheiden.
 
@@ -139,7 +140,7 @@ Een rendering-overlay bovenop de stijlmix, die de tekenwijze bepaalt. De invloed
 
 ## Voorbeelden bekijken
 
-Knop **◻ Voorbeelden** in de header van de resultatenkolom. Opent een picker met alle beschikbare series uit de `voorbeeld/`-map. Klik op een serie om de afbeeldingen als galerij te laden — zonder ↺-regeneratieknop. ZIP-download werkt ook voor voorbeeldafbeeldingen.
+Knop **Voorbeelden** in de header van de resultatenkolom. Opent een picker met alle beschikbare series uit de `voorbeeld/`-map. Klik op een serie om de afbeeldingen als galerij te laden — zonder ↺-regeneratieknop. ZIP-download werkt ook voor voorbeeldafbeeldingen.
 
 De manifest staat in `voorbeeld/index.json` — voeg een nieuwe serie toe door het JSON-bestand te updaten.
 
@@ -174,6 +175,7 @@ novelizer/
 │   │   ├── de_bioscoop.js
 │   │   ├── bolifur_saga.js
 │   │   ├── koning_pinteman.js
+│   │   ├── welcome_to_the_internet.js
 │   │   └── index.js
 │   ├── api.js
 │   ├── app.js
