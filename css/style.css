@@ -1214,10 +1214,9 @@ mark {
   font-family: monospace;
 }
 .apihelp-note {
-  font-size: 10px;
+  font-size: 12px;
   color: var(--text-muted);
-  opacity: 0.75;
-  line-height: 1.5;
+  line-height: 1.6;
   margin-top: 4px;
 }
 
