@@ -6,7 +6,7 @@ import { STYLE_DEFS } from './style_defs.js';
 import bordewijkStory from './stories/bordewijk_verplaatsing.js';
 import { STRIP_STYLES } from './strip_styles.js';
 
-export const VERSION = 'v0.036';
+export const VERSION = 'v0.037';
 
 // ─── Hulpfuncties ────────────────────────────────────────────────────────────
 
@@ -312,7 +312,7 @@ function buildFinalGeminiPrompt(claudePrompt, style, consistencyProfile, balloon
   if (balloonText) {
     parts.push(`SPEECH BUBBLE: Include exactly one speech bubble in the image containing the text: "${balloonText}". Draw it in the dominant art style with a tail pointing at the speaking character. No other text or lettering anywhere.`);
   } else if (charLabels && charLabels.length) {
-    parts.push(`IMPORTANT — CHARACTER NAME LABELS REQUIRED: Write each character's name in large, legible text directly below their feet. Names (left to right): ${charLabels.map(n => `"${n}"`).join(', ')}. These name labels are the ONLY text permitted in the image. No other lettering, captions, or speech bubbles.`);
+    parts.push(`NAME LABELS: Below each character's feet, place a simple rectangular nameplate with the character's name in plain block letters on a light background. Left to right: ${charLabels.map((n, i) => `figure ${i + 1} = "${n}"`).join(', ')}. No other text anywhere in the image.`);
   } else {
     parts.push('IMPORTANT: No text, no lettering, no speech bubbles, no captions anywhere in the image.');
   }
@@ -925,12 +925,18 @@ FORBIDDEN
   }
 
   // Extraheer karakter namen uit charAppearances voor label-overlay op kalibratie-afbeelding.
-  // Geeft ["Bordemanse · 1956 young", "Drebbel · 1956"] terug, in volgorde van het profiel.
+  // Werkt voor elke rol-label — niet alleen protagonist/antagonist.
   _extractCharNames(charAppearances) {
     const names = [];
     for (const line of (charAppearances || '').split('\n')) {
-      const m = line.match(/^-\s+(.+?)\s*\((?:protagonist|antagonist|mentor|bystander)\)/i);
-      if (m) names.push(m[1].trim());
+      const trimmed = line.trim();
+      if (!trimmed.startsWith('- ')) continue;
+      const content = trimmed.slice(2).trim();
+      const colonIdx = content.indexOf(':');
+      const namePart = colonIdx >= 0 ? content.slice(0, colonIdx).trim() : content.trim();
+      // Strip rol tussen haakjes aan het einde: "(protagonist)", "(villain)", etc.
+      const name = namePart.replace(/\s*\([^)]*\)\s*$/, '').trim();
+      if (name) names.push(name);
     }
     return names;
   }

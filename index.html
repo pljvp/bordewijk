@@ -566,13 +566,13 @@
      Bij versie-bump: V hieronder + ?v= op de app.js regel eronder + VERSION in generator.js. -->
 <script>
   (function () {
-    const V = '036'; // ← versie — ook bijwerken: app.js src hieronder + generator.js → VERSION
+    const V = '037'; // ← versie — ook bijwerken: app.js src hieronder + generator.js → VERSION
     const mods = [
       'storage', 'api', 'generator', 'widget_triangle',
       'story_view', 'output', 'story_library', 'story_creator',
       'style_defs', 'strip_styles', 'story_data'
     ];
-    const stories = ['index', 'bordewijk_verplaatsing', 'de_bioscoop', 'bolifur_saga'];
+    const stories = ['index', 'bordewijk_verplaatsing', 'de_bioscoop', 'bolifur_saga', 'koning_pinteman'];
     const imp = {};
     mods.forEach(m    => { imp[`/js/${m}.js`]          = `/js/${m}.js?v=${V}`; });
     stories.forEach(s => { imp[`/js/stories/${s}.js`]  = `/js/stories/${s}.js?v=${V}`; });
@@ -583,7 +583,7 @@
   })();
 </script>
 <!-- App — versie in src hieronder synchroniseren met V hierboven -->
-<script type="module" src="js/app.js?v=036"></script>
+<script type="module" src="js/app.js?v=037"></script>
 
 <script>
   // ── Accordion: max 1 sectie open tegelijk ───────────────────────────────
