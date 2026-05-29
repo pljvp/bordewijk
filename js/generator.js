@@ -6,7 +6,7 @@ import { STYLE_DEFS } from './style_defs.js';
 import bordewijkStory from './stories/bordewijk_verplaatsing.js';
 import { STRIP_STYLES } from './strip_styles.js';
 
-export const VERSION = 'v0.042';
+export const VERSION = 'v0.043';
 
 // ─── Hulpfuncties ────────────────────────────────────────────────────────────
 
@@ -81,6 +81,15 @@ function _scenesLabel(mode, sceneSource, n) {
 // Robuuste JSON-array-extractie: bracket-teller voorkomt dat greedy regex
 // voorbij de sluitende ] schiet als Claude tekst toevoegt na het array-blok.
 // Fallback: saniteer letterlijke newlines in string-waarden.
+function _sanitizeJson(s) {
+  // 1. Verwijder trailing commas vóór } of ]
+  s = s.replace(/,(\s*[\]}])/g, '$1');
+  // 2. Saniteer letterlijke newlines/tabs binnen string-waarden
+  s = s.replace(/"((?:[^"\\]|\\.)*)"/gs,
+    (_, v) => '"' + v.replace(/\n/g, ' ').replace(/\r/g, '').replace(/\t/g, ' ') + '"');
+  return s;
+}
+
 function safeParseJsonArray(raw) {
   // Zoek het eerste [ dat een JSON array van objecten opent — sla preamble-tekst met [ over
   const startMatch = raw.match(/\[\s*\{/);
@@ -101,14 +110,22 @@ function safeParseJsonArray(raw) {
   const jsonStr = end !== -1 ? raw.slice(start, end + 1) : raw.slice(start);
 
   try { return JSON.parse(jsonStr); } catch (e1) {
-    // Saniteer letterlijke newlines en tabs die binnen string-waarden terechtkwamen
-    const sanitized = jsonStr.replace(/"((?:[^"\\]|\\.)*)"/gs,
-      (_, s) => '"' + s.replace(/\n/g, ' ').replace(/\r/g, '').replace(/\t/g, ' ') + '"'
-    );
-    try { return JSON.parse(sanitized); } catch (e2) {
+    try { return JSON.parse(_sanitizeJson(jsonStr)); } catch (e2) {
       console.error('[NV] safeParseJsonArray mislukt. Eerste fout:', e1.message);
       console.error('[NV] Ruwe Claude-respons (eerste 2000 tekens):', raw.slice(0, 2000));
       return [];
+    }
+  }
+}
+
+function safeParseJsonObject(raw) {
+  const m = raw.match(/\{[\s\S]*\}/);
+  if (!m) return {};
+  try { return JSON.parse(m[0]); } catch (e1) {
+    try { return JSON.parse(_sanitizeJson(m[0])); } catch (e2) {
+      console.error('[NV] safeParseJsonObject mislukt. Eerste fout:', e1.message);
+      console.error('[NV] Ruwe Claude-respons (eerste 2000 tekens):', raw.slice(0, 2000));
+      return {};
     }
   }
 }
@@ -628,7 +645,7 @@ Antwoord uitsluitend als JSON (geen andere tekst):
     if (debug) console.log('[NV] Prompt 1 (scene A):', prompt);
     const raw = await claudeComplete([{ role: 'user', content: prompt }], '', sig);
     if (debug) console.log('[NV] Claude scene A response:', raw);
-    const scene = JSON.parse(raw.match(/\{[\s\S]*\}/)?.[0] || '{}');
+    const scene = safeParseJsonObject(raw);
     return [scene];
   }
 
