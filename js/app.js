@@ -187,7 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-examples').addEventListener('click', async () => {
     if (!_exampleSeries) {
       try {
-        const res = await fetch('voorbeeld/index.json');
+        const res = await fetch(`voorbeeld/index.json?v=${VERSION}`);
         const data = await res.json();
         _exampleSeries = data.series;
       } catch {
