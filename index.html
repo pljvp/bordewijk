@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Verplaatsing van elementen — F. Bordewijk</title>
-  <link rel="stylesheet" href="css/style.css?v=4">
+  <link rel="stylesheet" href="css/style.css?v=5">
 </head>
 <body>
 
@@ -328,8 +328,8 @@
     </div>
     <div class="modal-tabs">
       <button class="modal-tab active" data-tab="settings">Instellingen</button>
-      <button class="modal-tab" data-tab="apihelp">API-sleutels aanmaken</button>
-      <button class="modal-tab" data-tab="segments">Tips &amp; Tricks</button>
+      <button class="modal-tab" data-tab="apihelp">API-sleutels</button>
+      <button class="modal-tab" data-tab="segments">Tips</button>
       <button class="modal-tab" data-tab="over">Over</button>
     </div>
     <div class="modal-tab-panel" id="tab-settings">
@@ -428,6 +428,10 @@
             <span class="ts-track"></span>
           </label>
         </div>
+      </div>
+
+      <div class="modal-section">
+        <button class="btn btn-danger" id="btn-clear-all">Wis alles</button>
       </div>
 
     </div>
@@ -564,7 +568,6 @@
     </div><!-- /tab-over -->
 
     <div class="modal-footer">
-      <button class="btn btn-danger" id="btn-clear-all">Wis alles</button>
       <button class="btn" id="modal-close-btn" onclick="document.getElementById('modal-settings').classList.add('hidden')">Sluiten</button>
     </div>
   </div>
