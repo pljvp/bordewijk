@@ -899,16 +899,18 @@ ${buildFullStoryText(this._story)}
 Genereer het profiel in PRECIES dit formaat, geen andere tekst.
 
 Regels voor CHARACTER APPEARANCE:
-- Één regel per tijdversie per personage
+- Eén regel per personage met EXACT dezelfde kenmerken die in elke afbeelding terugkomen
+- Maak ALLEEN apart tijdversies (bijv. "· 1956 young" / "· 2006 old") wanneer het verhaal een grote tijdsspanne overspant waarin het personage zichtbaar verandert (jaren tot decennia, duidelijke veroudering, verwonding e.d.). Speelt het verhaal zich af binnen een korte periode zonder zichtbare verandering, gebruik dan ÉÉN regel zonder tijdsuffix — verzin GEEN kunstmatig "jong"/"oud"-onderscheid
 - Specificeer EXACTE kleuren voor kleding en haar (bijv. "beige trench coat" niet "working-class coat")
-- Alleen stabiele visuele kenmerken: bouw, gezicht, haar, kleding — GEEN props of accessoires
+- Alleen stabiele visuele kenmerken: bouw, gezicht, haar, kleding — GEEN props of accessoires, BEHALVE een object dat zo onlosmakelijk met het personage verbonden is dat het personage er een groot deel van het verhaal mee wordt afgebeeld en daarna definitief verdwijnt (bijv. een wandelstok); vermeld dat object dan kort in de regel, met het §-bereik waarin het wel/niet zichtbaar mag zijn, en herhaal dat bereik in SCENE PROPS en FORBIDDEN
 - Maximaal 6 kommagescheiden kenmerken per regel, geen volledige zinnen
-- De twee personages moeten visueel duidelijk van elkaar te onderscheiden zijn
+- Alle personages moeten visueel duidelijk van elkaar te onderscheiden zijn
+- Bevat het verhaal een NIET-menselijk element dat herhaaldelijk en op grote schaal voorkomt en bepalend is voor de visuele identiteit (bijv. een voertuig, machine of wezen), geef dat element dan een eigen regel met dezelfde precisie: exacte afmetingen, vorm, kleur, oppervlaktetextuur, bewegingsaard
 
 CHARACTER APPEARANCE — exact visual anchors, used verbatim in all image prompts:
-- Bordemanse · 1956 young (protagonist): [height/build, distinctive face feature, hair color+style, hat color+type, jacket/coat color+type, trouser color — 5–6 items]
-- Bordemanse · 2006 old (protagonist): [height/build, same distinctive face feature as young, hair color, coat color+type, trouser color — 4–5 items]
-- Drebbel · 1956 (antagonist): [height/build, distinctive face/posture feature, hair color+style, hat or no hat, jacket color+type, trouser color — 5–6 items, clearly different from Bordemanse]
+- [Naam] · [periode, alleen indien relevant] ([rol, bv. protagonist]): [bouw/lengte, kenmerkend gezicht, haarkleur+stijl, kledingkleuren+type — 5–6 items, eventueel + onlosmakelijk object met §-bereik]
+- [Naam 2] ([rol, bv. antagonist]): [bouw/lengte, kenmerkend gezicht/houding, haarkleur+stijl, kledingkleuren+type — 5–6 items, duidelijk anders dan [Naam]]
+- [eventueel: niet-menselijk hoofdelement] ([rol, bv. herhalend visueel anker]): [exacte afmetingen, vorm, kleur, oppervlak, beweging — 5–6 items]
 
 SCENE PROPS — NARRATIVE REFERENCE ONLY — do NOT draw unless listed in "PROPS IN THIS SCENE":
 - [prop]: [owner, narrative §§ range when present]

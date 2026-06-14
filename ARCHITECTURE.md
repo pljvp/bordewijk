@@ -36,6 +36,7 @@ novelizer/js/
 ├── stories/
 │   ├── bordewijk_verplaatsing.js   ← StoryDef Verplaatsing van elementen (VE)
 │   ├── de_bioscoop.js              ← StoryDef De Bioscoop (BC)
+│   ├── meneer_pem_heeft_een_droom.js ← StoryDef Meneer Pem heeft een droom (PD)
 │   ├── bolifur_saga.js             ← StoryDef De Saga van Bolifur de Paling (BS)
 │   ├── koning_pinteman.js          ← StoryDef Koning Pintenman (KP)
 │   ├── welcome_to_the_internet.js  ← StoryDef Welcome to the Internet (WI)
