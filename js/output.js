@@ -1,5 +1,19 @@
 // output.js — resultaatweergave, galerij, download PNG/ZIP
 
+// Time-out voor een ↺-regeneratie — voorkomt een eindeloos "Bezig…" bij een vastgelopen call.
+const REGEN_TIMEOUT_MS = 90_000;
+
+// Bewerkbare "basisinvoer"-velden per scène (basis voor de Gemini-beeldprompt).
+// list: true → tekstarea met één item per regel, opgeslagen als array.
+const SI_FIELDS = [
+  { key: 'scene_title',           label: 'Scènetitel',                                    type: 'input' },
+  { key: 'visual_description',    label: 'Visuele beschrijving',                          type: 'textarea', rows: 6 },
+  { key: 'key_elements',          label: 'Kernelementen (één per regel)',                 type: 'textarea', rows: 6, list: true },
+  { key: 'composition_directive', label: 'Compositie-aanwijzing',                         type: 'textarea', rows: 6 },
+  { key: 'world_state',           label: 'Wereldstatus (Engels)',                         type: 'textarea', rows: 6 },
+  { key: 'scene_forbidden',       label: 'Verboden in deze scène (Engels, één per regel)', type: 'textarea', rows: 6, list: true },
+];
+
 // Tekent een label-balk onder de afbeelding met de karakter-namen.
 // Geeft een nieuwe dataUrl terug (origineel ongewijzigd).
 function _addCharLabels(dataUrl, names) {
@@ -46,7 +60,11 @@ export class OutputView {
     this._regenCb = null;
     this._story = null;
     this._pickerEl = null;
+    this._siEl = null;     // basisinvoer-modal
+    this._siData = null;   // image-data waarop de basisinvoer-modal werkt
+    this._siCard = null;   // bijbehorende kaart (voor de "aangepast"-badge)
     this._setupLightbox();
+    this._setupSceneInputModal();
     this._clear();
   }
 
@@ -128,7 +146,221 @@ export class OutputView {
     lb.querySelector('.lb-next').disabled = pos >= imgs.length - 1;
   }
 
-  // Registreer callback voor herGeneratie: fn({ data, correctionNote, onResult, onError })
+  // ─── Basisinvoer-modal (bekijken/aanpassen van de scène-data achter een afbeelding) ──
+
+  _setupSceneInputModal() {
+    const [titleField, ...restFields] = SI_FIELDS;
+    const el = document.createElement('div');
+    el.className = 'modal-overlay hidden';
+    el.innerHTML = `
+      <div class="modal-box modal-box-wide">
+        <div class="modal-header">
+          <span class="modal-title">Basisinvoer — <span class="si-scene-name"></span></span>
+          <button class="modal-close si-close">✕</button>
+        </div>
+        <div class="modal-body modal-tab-panel">
+          <div class="modal-section">
+            <div class="modal-section-label">${_escHtml(titleField.label)}</div>
+            <div class="form-row"><input class="si-field" type="text" data-field="${titleField.key}"></div>
+          </div>
+          <div class="modal-section">
+            <div class="modal-section-label">Optionele bijsturing (voor ↺ Genereer, max. 256 tekens)</div>
+            <div class="form-row">
+              <textarea class="si-field" data-field="_correctionNote" rows="2" maxlength="256"
+                placeholder="bijv. 'Drebbel links', 'donkerder licht', 'geen fiets'…"></textarea>
+            </div>
+          </div>
+          ${restFields.map(f => `
+            <div class="modal-section">
+              <div class="modal-section-label">${_escHtml(f.label)}</div>
+              <div class="form-row">
+                ${f.type === 'textarea'
+                  ? `<textarea class="si-field" data-field="${f.key}" rows="${f.rows}"></textarea>`
+                  : `<input class="si-field" type="text" data-field="${f.key}">`}
+              </div>
+            </div>`).join('')}
+          <div class="si-status hidden"></div>
+          <p style="font-size:10px;color:var(--text-muted);line-height:1.5;margin:0">
+            Wijzigingen (incl. bijsturing) worden alleen voor deze sessie onthouden — niet op schijf opgeslagen.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-danger si-reset">Herstel naar origineel</button>
+          <span style="flex:1"></span>
+          <button class="btn si-cancel">Annuleer</button>
+          <button class="btn si-apply">Opslaan</button>
+          <button class="btn si-regen">↺ Genereer</button>
+        </div>
+      </div>`;
+    document.body.appendChild(el);
+    this._siEl = el;
+    this._siRegenAbort = null;
+
+    el.addEventListener('click', e => { if (e.target === el) this._closeSceneInputModal(); });
+    el.querySelector('.si-close').addEventListener('click', () => this._closeSceneInputModal());
+    el.querySelector('.si-cancel').addEventListener('click', () => this._closeSceneInputModal());
+    el.querySelector('.si-apply').addEventListener('click', () => this._applySceneInputModal());
+    el.querySelector('.si-reset').addEventListener('click', () => this._resetSceneInputModal());
+    el.querySelector('.si-regen').addEventListener('click', () => {
+      if (this._siRegenAbort) this._siRegenAbort.abort();
+      else this._startSceneRegen();
+    });
+
+    document.addEventListener('keydown', e => {
+      if (this._siEl.classList.contains('hidden')) return;
+      if (e.key === 'Escape') this._closeSceneInputModal();
+    });
+  }
+
+  _openSceneInputModal(data, card) {
+    if (!data._originalScene) data._originalScene = JSON.parse(JSON.stringify(data.scene));
+    this._siData = data;
+    this._siCard = card;
+    this._siEl.querySelector('.si-scene-name').textContent =
+      data.scene.scene_title || (data.scene.panel_number ? `Panel ${data.scene.panel_number}` : `Scène ${data.index + 1}`);
+    this._fillSceneInputFields(data);
+    this._setSceneInputStatus('');
+    this._resetSceneInputRegenButton();
+    this._siEl.classList.remove('hidden');
+  }
+
+  _fillSceneInputFields(data) {
+    for (const f of SI_FIELDS) {
+      const el = this._siEl.querySelector(`[data-field="${f.key}"]`);
+      const val = data.scene[f.key];
+      el.value = f.list ? (val || []).join('\n') : (val || '');
+    }
+    this._siEl.querySelector('[data-field="_correctionNote"]').value = data._correctionNote || '';
+  }
+
+  _closeSceneInputModal() {
+    if (this._siRegenAbort) {
+      this._siRegenAbort.abort();
+      this._siRegenAbort = null;
+    }
+    this._siEl.classList.add('hidden');
+    this._siData = null;
+    this._siCard = null;
+  }
+
+  _applySceneInputModal({ keepOpen = false } = {}) {
+    const data = this._siData;
+    if (!data) return;
+    for (const f of SI_FIELDS) {
+      const el = this._siEl.querySelector(`[data-field="${f.key}"]`);
+      data.scene[f.key] = f.list
+        ? el.value.split('\n').map(s => s.trim()).filter(Boolean)
+        : el.value.trim();
+    }
+    data._correctionNote = this._siEl.querySelector('[data-field="_correctionNote"]').value.trim();
+    data._edited = JSON.stringify(data.scene) !== JSON.stringify(data._originalScene);
+    if (this._siCard) {
+      this._siCard.querySelector('.edited-badge')?.classList.toggle('hidden', !data._edited);
+      this._refreshCardFromScene(this._siCard, data);
+    }
+    if (!keepOpen) this._closeSceneInputModal();
+  }
+
+  _resetSceneInputModal() {
+    const data = this._siData;
+    if (!data?._originalScene) return;
+    data.scene = JSON.parse(JSON.stringify(data._originalScene));
+    data._correctionNote = '';
+    data._edited = false;
+    if (this._siCard) {
+      this._siCard.querySelector('.edited-badge')?.classList.add('hidden');
+      this._refreshCardFromScene(this._siCard, data);
+    }
+    this._fillSceneInputFields(data);
+    this._setSceneInputStatus('');
+  }
+
+  // Werk de zichtbare titel + compositie-tekst op een kaart bij na een basisinvoer-wijziging
+  _refreshCardFromScene(card, data) {
+    const scene = data.scene;
+    const title = scene.scene_title || (scene.panel_number ? `Panel ${scene.panel_number}` : `Scène ${data.index + 1}`);
+    const titleEl = card.querySelector('.image-card-title');
+    if (titleEl) titleEl.textContent = title;
+    const compEl = card.querySelector('.image-card-comp-text');
+    if (compEl) compEl.textContent = scene.composition_directive || scene.composition_type || '';
+  }
+
+  // Werk de afbeelding + prompt op een kaart bij na een geslaagde herGeneratie
+  _refreshCardImage(card, data) {
+    const imgEl = card.querySelector('img');
+    if (imgEl) imgEl.src = data.dataUrl;
+    if (data.prompt) {
+      const preEl = card.querySelector('.image-card-style-info pre');
+      if (preEl) preEl.textContent = data.prompt;
+    }
+  }
+
+  _setSceneInputStatus(text, kind = '') {
+    const el = this._siEl.querySelector('.si-status');
+    el.textContent = text;
+    el.classList.toggle('hidden', !text);
+    el.classList.remove('is-error', 'is-busy', 'is-ok');
+    if (kind) el.classList.add(`is-${kind}`);
+  }
+
+  _resetSceneInputRegenButton() {
+    const regenBtn = this._siEl.querySelector('.si-regen');
+    regenBtn.textContent = '↺ Genereer';
+    regenBtn.classList.remove('btn-danger');
+    this._siEl.querySelector('.si-apply').disabled = false;
+    this._siEl.querySelector('.si-reset').disabled = false;
+  }
+
+  // Past de huidige basisinvoer toe en start een herGeneratie met de optionele bijsturing
+  _startSceneRegen() {
+    this._applySceneInputModal({ keepOpen: true });
+    const data = this._siData;
+    const card = this._siCard;
+    const correctionNote = data._correctionNote || '';
+
+    const regenBtn = this._siEl.querySelector('.si-regen');
+    const applyBtn = this._siEl.querySelector('.si-apply');
+    const resetBtn = this._siEl.querySelector('.si-reset');
+
+    regenBtn.textContent = '■ Stop';
+    regenBtn.classList.add('btn-danger');
+    applyBtn.disabled = true;
+    resetBtn.disabled = true;
+    this._setSceneInputStatus('Bezig met genereren…', 'busy');
+
+    const ac = new AbortController();
+    this._siRegenAbort = ac;
+    const timeoutId = setTimeout(() => ac.abort(), REGEN_TIMEOUT_MS);
+
+    const finish = () => {
+      clearTimeout(timeoutId);
+      this._siRegenAbort = null;
+      this._resetSceneInputRegenButton();
+    };
+
+    this._regenCb?.({
+      data,
+      correctionNote,
+      signal: ac.signal,
+      onResult: (newDataUrl, newPrompt) => {
+        if (this._siRegenAbort !== ac) return; // overruled door annuleren/nieuwe poging
+        data.dataUrl = newDataUrl;
+        if (newPrompt) data.prompt = newPrompt;
+        if (card) this._refreshCardImage(card, data);
+        this._setSceneInputStatus('Gereed ✓', 'ok');
+        finish();
+      },
+      onError: (msg, isAbort) => {
+        if (this._siRegenAbort !== ac) return; // overruled door annuleren/nieuwe poging
+        this._setSceneInputStatus(isAbort
+          ? 'Gestopt (handmatig of na 90s time-out).'
+          : msg, 'error');
+        finish();
+      },
+    });
+  }
+
+  // Registreer callback voor herGeneratie: fn({ data, correctionNote, signal, onResult, onError })
   onRegenerate(cb) { this._regenCb = cb; }
 
   setMode(mode, novelCount) {
@@ -459,7 +691,10 @@ export class OutputView {
 
     card.innerHTML = `
       <div class="image-card-header">
-        <span class="image-card-title">${_escHtml(title)}</span>
+        <span class="image-card-title-group">
+          <span class="image-card-title">${_escHtml(title)}</span>
+          <span class="edited-badge hidden" title="Basisinvoer aangepast (niet opgeslagen)">✎ aangepast</span>
+        </span>
         ${isPanel && scene.panel_number ? `<span class="image-card-panel-num">#${scene.panel_number}</span>` : ''}
       </div>
       ${sidetext
@@ -481,23 +716,17 @@ export class OutputView {
           </details>` : ''}
           ${(scene?.composition_directive || scene?.composition_type) ? `<details class="image-card-style-info">
             <summary>Compositie ▾</summary>
-            <div style="padding-top:4px;font-size:10px;line-height:1.5">${_escHtml(scene.composition_directive || scene.composition_type)}</div>
+            <div class="image-card-comp-text" style="padding-top:4px;font-size:10px;line-height:1.5">${_escHtml(scene.composition_directive || scene.composition_type)}</div>
           </details>` : ''}
         </div>
         <div style="display:flex;gap:5px;flex-shrink:0">
           <button class="btn-sm btn-dl">↓ PNG</button>
-          ${isExample ? '' : '<button class="btn-sm btn-regen" title="Opnieuw genereren met optionele bijsturing">↺</button>'}
+          ${isExample ? '' : '<button class="btn-sm btn-edit-input" title="Basisinvoer bekijken, bijsturen en opnieuw genereren">✎</button>'}
           <button class="btn-sm btn-remove-img" title="Verwijder deze afbeelding" style="color:var(--accent);border-color:rgba(232,89,74,.3)">✕</button>
         </div>
-      </div>
-      ${isExample ? '' : `<div class="regen-panel">
-        <input class="regen-input" type="text" maxlength="200"
-          placeholder="Optionele bijsturing — bijv. 'Drebbel links', 'donkerder licht', 'geen fiets'…">
-        <div class="regen-actions">
-          <button class="btn-sm regen-submit">↺ Genereer</button>
-          <button class="btn-sm regen-cancel">Annuleer</button>
-        </div>
-      </div>`}`;
+      </div>`;
+
+    if (data._edited) card.querySelector('.edited-badge')?.classList.remove('hidden');
 
     const imgEl = card.querySelector('img');
     imgEl.style.cursor = 'zoom-in';
@@ -512,52 +741,8 @@ export class OutputView {
       card.remove();
     });
 
-    card.querySelector('.btn-regen')?.addEventListener('click', () => {
-      const panel = card.querySelector('.regen-panel');
-      panel.classList.toggle('open');
-      if (panel.classList.contains('open')) panel.querySelector('.regen-input').focus();
-    });
-
-    card.querySelector('.regen-cancel')?.addEventListener('click', () => {
-      card.querySelector('.regen-panel').classList.remove('open');
-    });
-
-    card.querySelector('.regen-submit')?.addEventListener('click', () => {
-      const correctionNote = card.querySelector('.regen-input').value.trim();
-      const submitBtn = card.querySelector('.regen-submit');
-      const cancelBtn = card.querySelector('.regen-cancel');
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Bezig…';
-      cancelBtn.disabled = true;
-      this._regenCb?.({
-        data,
-        correctionNote,
-        onResult: (newDataUrl, newPrompt) => {
-          card.querySelector('img').src = newDataUrl;
-          data.dataUrl = newDataUrl;
-          if (newPrompt) {
-            data.prompt = newPrompt;
-            const preEl = card.querySelector('.image-card-style-info pre');
-            if (preEl) preEl.textContent = newPrompt;
-          }
-          card.querySelector('.regen-panel').classList.remove('open');
-          submitBtn.disabled = false;
-          submitBtn.textContent = '↺ Genereer';
-          cancelBtn.disabled = false;
-        },
-        onError: (msg) => {
-          submitBtn.disabled = false;
-          submitBtn.textContent = '↺ Genereer';
-          cancelBtn.disabled = false;
-          let errEl = card.querySelector('.regen-error');
-          if (!errEl) {
-            errEl = document.createElement('div');
-            errEl.className = 'regen-error';
-            card.querySelector('.regen-panel').appendChild(errEl);
-          }
-          errEl.textContent = msg;
-        },
-      });
+    card.querySelector('.btn-edit-input')?.addEventListener('click', () => {
+      this._openSceneInputModal(data, card);
     });
 
     return card;

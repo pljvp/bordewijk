@@ -1113,8 +1113,28 @@ mark {
 }
 .form-row input:focus, .form-row select:focus { border-color: var(--gold); }
 
+.form-row textarea {
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-main);
+  padding: 7px 9px;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1.5;
+  outline: none;
+  resize: vertical;
+  transition: border-color .15s;
+}
+.form-row textarea:focus { border-color: var(--gold); }
+
 .form-row-flex { display: flex; gap: 5px; }
 .form-row-flex input { flex: 1; }
+
+/* Wider variant for modals with multi-line text fields */
+.modal-box-wide { max-width: 640px; }
 
 .btn-test {
   background: none;
@@ -1291,6 +1311,7 @@ mark {
   display: flex;
   gap: 7px;
   justify-content: flex-end;
+  flex-wrap: wrap;
   flex-shrink: 0;
 }
 
@@ -1332,7 +1353,58 @@ mark {
 
 .btn-set-proof { color: var(--text-muted); }
 .btn-set-proof:hover { border-color: var(--gold); color: var(--gold); }
+
+/* ── Basisinvoer (edit scene input) ─────────────────────────── */
+.image-card-title-group { display: flex; align-items: center; gap: 6px; min-width: 0; }
+
+.edited-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--gold);
+  background: var(--gold-dim);
+  border: 1px solid var(--gold-border);
+  border-radius: 3px;
+  padding: 1px 5px;
+  white-space: nowrap;
+}
+.edited-badge.hidden { display: none; }
 .is-style-proof .btn-set-proof { color: var(--gold); border-color: var(--gold); }
+
+/* Velden in de basisinvoer-modal: gelijke breedte, donkere achtergrond, gouden rand */
+.form-row .si-field {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--bg-input);
+  border: 1px solid var(--gold-border);
+  border-radius: var(--radius);
+  color: var(--text-main);
+  padding: 7px 9px;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.73;
+  outline: none;
+  transition: border-color .15s;
+}
+.form-row .si-field:focus { border-color: var(--gold); }
+.form-row textarea.si-field { resize: vertical; overflow-y: auto; }
+
+.si-status {
+  font-size: 11px;
+  line-height: 1.5;
+  padding: 6px 9px;
+  border-radius: var(--radius);
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+.si-status.hidden { display: none; }
+.si-status.is-busy  { color: var(--gold); }
+.si-status.is-ok    { color: #4caf50; border-color: rgba(76,175,80,.35); }
+.si-status.is-error { color: var(--accent); border-color: rgba(232,89,74,.35); }
 
 /* Consistentiestatus in modal */
 .consistency-status {
@@ -1609,40 +1681,6 @@ mark {
   transition: background .15s, color .15s;
 }
 .lb-dl:hover { background: rgba(255,255,255,.13); color: var(--text-main); }
-
-/* ── Regenereer-paneel ───────────────────────────────────────── */
-
-.regen-panel {
-  display: none;
-  flex-direction: column;
-  gap: 6px;
-  padding: 8px 10px;
-  border-top: 1px solid var(--border);
-  background: var(--bg-deep);
-}
-.regen-panel.open { display: flex; }
-
-.regen-input {
-  width: 100%;
-  box-sizing: border-box;
-  background: var(--bg-mid);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  color: var(--text-main);
-  font: inherit;
-  font-size: 12px;
-  padding: 5px 8px;
-}
-.regen-input:focus { outline: none; border-color: var(--accent); }
-.regen-input::placeholder { color: var(--text-muted); }
-
-.regen-actions { display: flex; gap: 6px; justify-content: flex-end; }
-
-.regen-error {
-  font-size: 11px;
-  color: var(--accent);
-  margin-top: 2px;
-}
 
 /* ── Responsive ─────────────────────────────────────────────── */
 

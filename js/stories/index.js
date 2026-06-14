@@ -4,6 +4,7 @@ import pem from './meneer_pem_heeft_een_droom.js';
 import bolifur from './bolifur_saga.js';
 import pinteman from './koning_pinteman.js';
 import internet from './welcome_to_the_internet.js';
+import hetDorp from './het_dorp.js';
 
-export const STORY_LIBRARY = [bordewijk, bioscoop, pem, bolifur, pinteman, internet];
+export const STORY_LIBRARY = [bordewijk, bioscoop, pem, bolifur, pinteman, internet, hetDorp];
 export const DEFAULT_STORY_ID = 'bordewijk_verplaatsing';

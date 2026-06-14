@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
   outputView.setStory(_activeStory);
 
   // HerGeneratie-callback: roept generator aan voor één afbeelding
-  outputView.onRegenerate(async ({ data, correctionNote, onResult, onError }) => {
+  outputView.onRegenerate(async ({ data, correctionNote, signal, onResult, onError }) => {
     try {
       _debugLog(`HerGeneratie gestart: "${correctionNote || '(geen bijsturing)'}"`);
       const { dataUrl, prompt } = await generator.regenerateScene({
@@ -50,12 +50,14 @@ document.addEventListener('DOMContentLoaded', () => {
         style:          data.style,
         stripStyle:     storage.getStripStyle(),
         correctionNote,
+        signal,
       });
       onResult(dataUrl, prompt);
       _debugLog(`HerGeneratie gereed. Prompt:\n${prompt}`);
     } catch (err) {
-      onError(err.message || 'Onbekende fout bij herGeneratie');
-      _debugLog(`HerGeneratie mislukt: ${err.message}`);
+      const isAbort = err.name === 'AbortError';
+      onError(isAbort ? 'Gestopt' : (err.message || 'Onbekende fout bij herGeneratie'), isAbort);
+      _debugLog(isAbort ? 'HerGeneratie afgebroken (time-out of handmatig gestopt).' : `HerGeneratie mislukt: ${err.message}`);
     }
   });
 

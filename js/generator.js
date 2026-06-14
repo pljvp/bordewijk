@@ -6,7 +6,7 @@ import { STYLE_DEFS } from './style_defs.js';
 import bordewijkStory from './stories/bordewijk_verplaatsing.js';
 import { STRIP_STYLES } from './strip_styles.js';
 
-export const VERSION = 'v0.046';
+export const VERSION = 'v0.048';
 
 // ─── Hulpfuncties ────────────────────────────────────────────────────────────
 
@@ -188,6 +188,10 @@ ${worldDesign}`;
 // charAppearances: CHARACTER APPEARANCE blok uit consistentieprofiel voor named character cues
 // sceneProps: SCENE PROPS blok voor prop-eigendoms-verificatie
 // correctionNote: optionele vrije tekst bij herGeneratie (bijsturing karakter, omgeving, etc.)
+function escapeRegExp(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 function buildImagePromptRequest(scene, charAppearances, sceneProps = '', correctionNote = '') {
   const keyEls = (scene.key_elements || []).join(', ') || '—';
   const worldState = scene.world_state ? `\nNarrative state: ${scene.world_state}` : '';
@@ -199,19 +203,26 @@ function buildImagePromptRequest(scene, charAppearances, sceneProps = '', correc
   let charNamedCues = '';
   if (scene.active_characters?.length) {
     const lines = scene.active_characters.map(c => {
+      const escapedName = escapeRegExp(c.name);
       // Strip "young"/"old" suffix before matching — CHARACTER APPEARANCE uses year only (e.g. "· 1956")
-      const yearOnly = c.temporal_version.replace(/\s+(young|old)$/i, '').trim();
-      const re = charAppearances
-        ? new RegExp(`-\\s*${c.name}[^\\n]*${yearOnly}[^\\n]*`, 'i')
+      const yearOnly = (c.temporal_version || '').replace(/\s+(young|old)$/i, '').trim();
+      const yearRe = charAppearances && yearOnly
+        ? new RegExp(`-\\s*${escapedName}[^\\n]*${escapeRegExp(yearOnly)}[^\\n]*`, 'i')
         : null;
-      const match = re ? charAppearances.match(re) : null;
+      let match = yearRe ? charAppearances.match(yearRe) : null;
+      // Fallback: match by name only — covers characters/elements with a single,
+      // non-temporal CHARACTER APPEARANCE line (e.g. a recurring non-human element)
+      if (!match && charAppearances) {
+        const nameRe = new RegExp(`-\\s*${escapedName}\\b[^\\n]*`, 'i');
+        match = charAppearances.match(nameRe);
+      }
       const appearance = match ? match[0].replace(/^-\s*/, '') : null;
       const actionNote = c.action ? `\n  SCENE ACTION: ${c.action}` : '';
       return appearance
         ? `${c.name} (${c.role}): ${appearance}${actionNote}`
         : `${c.name} (${c.role})${actionNote}`;
     });
-    charNamedCues = `\n\nCHARACTER VISUAL REFERENCE — refer to each character by name:\n${lines.join('\n')}\nRules: (1) Use character names in your description. (2) Use ONLY the visual traits listed — do NOT add hats, accessories, or garments not listed. (3) Each character must perform their stated SCENE ACTION — do not swap actions between characters.`;
+    charNamedCues = `\n\nCHARACTER VISUAL REFERENCE — refer to each character/element by name:\n${lines.join('\n')}\nRules: (1) Use these names in your description. (2) Use ONLY the visual traits listed — do NOT add hats, accessories, or garments not listed. (3) Each character must perform their stated SCENE ACTION — do not swap actions between characters. (4) A "major non-human element" must be drawn with the EXACT dimensions, shape, colour and surface texture listed — do not reinterpret or redesign it.`;
   }
 
   // Prop ownership constraint: prevents Claude from reassigning props to the wrong character
@@ -232,7 +243,7 @@ Title: ${scene.scene_title}
 Description: ${scene.visual_description}
 Key elements: ${keyEls}${worldState}${forbidden}${charNamedCues}${propConstraint}${correction}
 
-Context: 1950s Netherlands. People wear plain working-class 1950s Dutch clothing. Technology is ordinary: bicycles, modest brick buildings, simple tools. No machinery or apparatus should be described unless it is mundane 1950s Dutch. If the sea hangs overhead, describe it as a natural atmospheric feature — a vast dark ceiling of water far above, like storm clouds.
+Context: stay strictly within the time period, setting and world established by the story's CHARACTER VISUAL REFERENCE and key elements above — do not introduce anachronistic technology, clothing or architecture, and do not omit or downscale any non-human element described there, however large or unusual.
 
 Write 60–80 words in English. Reply with the scene content description only — no style words, no preamble.`;
 }
@@ -638,7 +649,7 @@ Antwoord uitsluitend als JSON (geen andere tekst):
   "key_elements": ["<visueel element>"],
   "world_state": "<one sentence in English: state of the world at this point in the story — has the sea been displaced? what is visible above the characters? season/time of day?>",
   "scene_forbidden": ["<visual element that must NOT appear in THIS specific scene, based on the story text — in English>"],
-  "active_characters": [{"name": "<character name>", "temporal_version": "<e.g. '1956 young' or '2006 old'>", "role": "<protagonist|antagonist|mentor|bystander>", "action": "<what this character is physically doing in this specific scene — verb phrase, max 10 words>"}],
+  "active_characters": [{"name": "<character name>", "temporal_version": "<period suffix from the CHARACTER APPEARANCE entry for this character, verbatim — e.g. '1956 young'; leave empty if that character has only one appearance>", "role": "<protagonist|antagonist|mentor|bystander|major non-human element>", "action": "<what this character is physically doing in this specific scene — verb phrase, max 10 words>"}],
   "composition_directive": "<camera angle + shot size + figure-to-space ratio + compositional energy, chosen for this scene's specific action and emotional register — e.g. 'extreme low angle wide shot, tiny figures dwarfed by sea overhead, diagonal tension left to right' or 'tight close-up, face half in shadow, static intensity' or 'medium shot eye-level, two figures facing each other, horizontal calm'>"
 }`;
 
@@ -705,7 +716,7 @@ Antwoord uitsluitend als JSON-array met precies ${n} objecten (geen andere tekst
     "key_elements": ["<element>"],
     "world_state": "<one sentence in English: state of the world at this point — has the sea been displaced? what is visible above the characters?>",
     "scene_forbidden": ["<visual element that must NOT appear in THIS specific scene — in English>"],
-    "active_characters": [{"name": "<character name>", "temporal_version": "<'1956 young'|'1956 old'|'2006 old'>", "role": "<protagonist|antagonist|mentor|bystander>", "action": "<what this character is physically doing in this specific scene — verb phrase, max 10 words>"}],
+    "active_characters": [{"name": "<character name>", "temporal_version": "<period suffix from the CHARACTER APPEARANCE entry for this character, verbatim — e.g. '1956 young'; leave empty if that character has only one appearance>", "role": "<protagonist|antagonist|mentor|bystander|major non-human element>", "action": "<what this character is physically doing in this specific scene — verb phrase, max 10 words>"}],
     "composition_directive": "<camera angle + shot size + figure-to-space ratio + compositional energy, chosen for this scene's specific action and emotional register — e.g. 'extreme low angle wide shot, tiny figures dwarfed by sea overhead, diagonal tension left to right' or 'tight close-up, face half in shadow, static intensity' or 'medium shot eye-level, two figures facing each other, horizontal calm'>"
   }
 ]`;
@@ -735,7 +746,7 @@ Antwoord uitsluitend als JSON-array met precies ${n} objecten (geen andere tekst
     "balloon_text": "<maximaal 15 woorden dialoog, of null>",
     "world_state": "<one sentence in English: state of the world at this point in the story>",
     "scene_forbidden": ["<visual element that must NOT appear in this specific panel — in English>"],
-    "active_characters": [{"name": "<character name>", "temporal_version": "<'1956 young'|'1956 old'|'2006 old'>", "role": "<protagonist|antagonist|mentor|bystander>", "action": "<what this character is physically doing in this specific scene — verb phrase, max 10 words>"}],
+    "active_characters": [{"name": "<character name>", "temporal_version": "<period suffix from the CHARACTER APPEARANCE entry for this character, verbatim — e.g. '1956 young'; leave empty if that character has only one appearance>", "role": "<protagonist|antagonist|mentor|bystander|major non-human element>", "action": "<what this character is physically doing in this specific scene — verb phrase, max 10 words>"}],
     "composition_directive": "<camera angle + shot size + figure-to-space ratio + compositional energy — specific to this panel's scene and emotional register, e.g. 'low angle wide shot, figures small against vast sea overhead, diagonal tension'; 'tight close-up filling frame, static intensity'; 'bird's eye, lone figure in empty street, vertical isolation'>"
   }
 ]`;
@@ -905,12 +916,12 @@ Regels voor CHARACTER APPEARANCE:
 - Alleen stabiele visuele kenmerken: bouw, gezicht, haar, kleding — GEEN props of accessoires, BEHALVE een object dat zo onlosmakelijk met het personage verbonden is dat het personage er een groot deel van het verhaal mee wordt afgebeeld en daarna definitief verdwijnt (bijv. een wandelstok); vermeld dat object dan kort in de regel, met het §-bereik waarin het wel/niet zichtbaar mag zijn, en herhaal dat bereik in SCENE PROPS en FORBIDDEN
 - Maximaal 6 kommagescheiden kenmerken per regel, geen volledige zinnen
 - Alle personages moeten visueel duidelijk van elkaar te onderscheiden zijn
-- Bevat het verhaal een NIET-menselijk element dat herhaaldelijk en op grote schaal voorkomt en bepalend is voor de visuele identiteit (bijv. een voertuig, machine of wezen), geef dat element dan een eigen regel met dezelfde precisie: exacte afmetingen, vorm, kleur, oppervlaktetextuur, bewegingsaard
+- Bevat het verhaal een NIET-menselijk element dat herhaaldelijk en op grote schaal voorkomt en bepalend is voor de visuele identiteit (bijv. een voertuig, machine of wezen), geef dat element dan een eigen regel met dezelfde precisie: exacte afmetingen, vorm, kleur, oppervlaktetextuur, bewegingsaard — gebruik daarvoor als rol-label EXACT "(major non-human element)", zodat dit element herkend wordt door de beeldpipeline
 
 CHARACTER APPEARANCE — exact visual anchors, used verbatim in all image prompts:
 - [Naam] · [periode, alleen indien relevant] ([rol, bv. protagonist]): [bouw/lengte, kenmerkend gezicht, haarkleur+stijl, kledingkleuren+type — 5–6 items, eventueel + onlosmakelijk object met §-bereik]
 - [Naam 2] ([rol, bv. antagonist]): [bouw/lengte, kenmerkend gezicht/houding, haarkleur+stijl, kledingkleuren+type — 5–6 items, duidelijk anders dan [Naam]]
-- [eventueel: niet-menselijk hoofdelement] ([rol, bv. herhalend visueel anker]): [exacte afmetingen, vorm, kleur, oppervlak, beweging — 5–6 items]
+- [eventueel: niet-menselijk hoofdelement] (major non-human element): [exacte afmetingen, vorm, kleur, oppervlak, beweging — 5–6 items]
 
 SCENE PROPS — NARRATIVE REFERENCE ONLY — do NOT draw unless listed in "PROPS IN THIS SCENE":
 - [prop]: [owner, narrative §§ range when present]
@@ -968,23 +979,37 @@ FORBIDDEN
 
   // ─── Karakter-kalibratie-afbeelding ──────────────────────────────────────
   // Genereert een "character lineup" als 0e stijlproef vóór de verhaalscènes.
-  // Beide personages frontaal, vol lichaam, neutraal strand — geen verhaalcompositie.
+  // Personages frontaal, vol lichaam, neutrale buitenomgeving — geen verhaalcompositie.
+  // Een eventueel "(major non-human element)" (bv. een gigantisch voertuig) wordt
+  // op ware schaal in dezelfde afbeelding meegegeven als apart visueel anker.
   async _generateCalibrationImage(style, consistency, charAppearances, stripStyle, model, sig, debug, correctionNote = '') {
-    // Tel het aantal characters op basis van bullet-regels in charAppearances
-    const charCount = (charAppearances.match(/^-\s+\S/gm) || []).length || 2;
+    // Splits CHARACTER APPEARANCE in menselijke personages (de lineup) en eventuele
+    // "(major non-human element)"-regels (bv. een gigantisch voertuig of wezen) —
+    // die laatste kunnen niet als mens-schaal figuur "naast" de lineup staan en
+    // krijgen daarom een eigen, schaal-correcte aanwijzing in dezelfde afbeelding.
+    const appearanceLines = charAppearances.match(/^-\s+.+$/gm) || [];
+    const elementLines = appearanceLines.filter(l => /\([^)]*non-human[^)]*\)/i.test(l));
+    const humanLines = appearanceLines.filter(l => !elementLines.includes(l));
+    const humanAppearances = humanLines.join('\n');
+
+    const charCount = humanLines.length || 2;
     const positions = charCount === 2
       ? 'The taller character stands on the LEFT, the shorter on the RIGHT.'
       : `Characters arranged left to right, tallest to shortest (${charCount} figures total).`;
 
-    const charNames = this._extractCharNames(charAppearances);
+    const charNames = this._extractCharNames(humanAppearances);
+
+    const elementNote = elementLines.length
+      ? `\n\nMAJOR NON-HUMAN ELEMENT(S) — also establish the definitive design of the following as a visual anchor for this series, shown in the SAME image at its true dramatic scale relative to the characters (e.g. immense and distant on the horizon, or towering in the background) — exact shape, colour, surface texture and proportions must match:\n${elementLines.join('\n')}\nThis element does not join the character line-up itself — it appears alongside/behind it, at its true scale, not at human scale.`
+      : '';
 
     const lineupDesc = `CHARACTER LINEUP — establish the definitive visual reference for all characters in this series.
 
-Draw exactly ${charCount} character${charCount === 1 ? '' : 's'} standing side by side, facing the viewer directly, full body visible from head to toe. Simple neutral setting: empty beach, pre-displacement morning, calm sea at the horizon, no story action.
+Draw exactly ${charCount} character${charCount === 1 ? '' : 's'} standing side by side, facing the viewer directly, full body visible from head to toe. Simple neutral outdoor setting: open space with a visible horizon, no story action.
 
-${charAppearances}
+${humanAppearances}${elementNote}
 
-STRICT RULE: this image contains ONLY the ${charCount} character${charCount === 1 ? '' : 's'} described above — no other figures, no bystanders, no background people whatsoever.
+STRICT RULE: besides the ${charCount} character${charCount === 1 ? '' : 's'} described above${elementLines.length ? ' and the non-human element described above' : ''}, this image contains no other figures, no bystanders, no background people whatsoever.
 ${positions}
 Every character is relaxed, hands at sides, no props held, no action, no interaction. Clear full-body view of each. Characters visually distinct and individually recognizable.${correctionNote ? `\n\nUSER CORRECTION FOR THIS ATTEMPT: ${correctionNote}\nApply this instruction — it overrides the defaults above where they conflict.` : ''}`;
 

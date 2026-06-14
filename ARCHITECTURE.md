@@ -174,6 +174,7 @@ Gegenereerd door `_generateConsistencyProfile()` in `generator.js`. Claude leest
 **CHARACTER APPEARANCE** — gedetailleerde uiterlijk-regels:
 - Per personage/tijdversie: haarkleur, lengte, bouw, specifieke kenmerken
 - Gebruikt in de kalibratie-prompt en in scène-specifieke prompts
+- Optioneel: een regel met rol-label `(major non-human element)` voor een niet-menselijk element dat herhaaldelijk en op grote schaal voorkomt (bijv. een gigantisch voertuig) — krijgt dezelfde precisie (afmetingen, vorm, kleur, oppervlak, beweging) en wordt apart behandeld in de kalibratie (zie §4)
 
 Het profiel wordt als `nv_{id}_consistency` gecached (persisterend) en als `nv_{id}_char_appearances` apart opgeslagen. Bij elke Gemini-call wordt het als vaste prefix in de prompt opgenomen.
 
@@ -192,6 +193,8 @@ Aan het begin van elke generatierun (als ingeschakeld) laat `_generateCalibratio
 - Geeft de gebruiker controle: goedkeuren of opnieuw genereren (met optionele bijsturing)
 
 De kalibratie-prompt puurt automatisch de actieve personages uit `char_appearances` en telt ze (`charCount`), zodat nooit te veel of te weinig figuren worden getekend.
+
+Een `(major non-human element)`-regel (zie §2) telt niet mee in `charCount` en wordt niet in de mens-lineup geplaatst. In plaats daarvan krijgt `_generateCalibrationImage()` een extra instructie om dat element in dezelfde afbeelding op ware schaal te tonen (bijv. enorm en ver weg op de horizon achter de personages) — zo wordt ook het ontwerp van zo'n element (vorm, kleur, oppervlak) als visueel anker voor de hele run vastgelegd, in plaats van per scène opnieuw verzonnen te worden.
 
 ### 5. Scènes — scènekeuze en prompt-opbouw
 
