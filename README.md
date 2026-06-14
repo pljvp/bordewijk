@@ -50,7 +50,7 @@ De meest linkse kolom toont alle beschikbare verhalen. De bibliotheek bevat nu z
 |---|---|---|---|
 | Verplaatsing van elementen | F. Bordewijk | `VE` | kort verhaal |
 | De Bioscoop | F. Bordewijk | `BC` | kort verhaal (1919) |
-| Meneer Pem heeft een droom | Anoniem | `PD` | kort verhaal |
+| Meneer Pem heeft een droom | F. Bordewijk | `PD` | kort verhaal (1955) |
 | De Saga van Bolifur de Paling | Anoniem | `BS` | poëzie |
 | Koning Pintenman | Band Zonder Banaan | `KP` | poëzie |
 | Welcome to the Internet | Bo Burnham | `WI` | poëzie |

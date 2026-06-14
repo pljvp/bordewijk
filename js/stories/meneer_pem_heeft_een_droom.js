@@ -1,11 +1,11 @@
 // stories/meneer_pem_heeft_een_droom.js — StoryDef
-// Meneer Pem heeft een droom — Anoniem
+// Meneer Pem heeft een droom — F. Bordewijk (1955)
 
 export default {
   id: 'meneer_pem_heeft_een_droom',
   title: 'Meneer Pem heeft een droom',
-  author: 'Anoniem',
-  year: null,
+  author: 'F. Bordewijk',
+  year: 1955,
   genre: 'overig',
   fileCode: 'PD',
   writerStyle: 'droog-realistisch, psychologisch nauwkeurig, ironisch-afstandelijk, gedetailleerde karakterschets, sobere verteltoon, licht surrealistische climax',

@@ -844,7 +844,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!story) return;
     const h1 = document.getElementById('header-story-sub');
     const h2 = document.getElementById('header-story-title');
-    if (h1) h1.textContent = `ode aan ${story.author}`;
+    if (h1) h1.textContent = story.id === 'meneer_pem_heeft_een_droom' ? 'Ode aan Bordewijk' : `ode aan ${story.author}`;
     if (h2) {
       const label = `${story.title}${story.year ? ' (' + story.year + ')' : ''}`;
       h2.innerHTML = story.sourceUrl
