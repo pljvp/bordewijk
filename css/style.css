@@ -873,6 +873,8 @@ mark {
   transition: border-color .15s, color .15s;
 }
 .btn-sm:hover { border-color: var(--gold); color: var(--gold); }
+.btn-regen-card.is-ok    { color: #4caf50; border-color: rgba(76,175,80,.35); }
+.btn-regen-card.is-error { color: var(--accent); border-color: rgba(232,89,74,.35); }
 
 #output-container {
   flex: 1;

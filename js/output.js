@@ -194,7 +194,6 @@ export class OutputView {
       </div>`;
     document.body.appendChild(el);
     this._siEl = el;
-    this._siRegenAbort = null;
 
     el.addEventListener('click', e => { if (e.target === el) this._closeSceneInputModal(); });
     el.querySelector('.si-close').addEventListener('click', () => this._closeSceneInputModal());
@@ -202,7 +201,8 @@ export class OutputView {
     el.querySelector('.si-apply').addEventListener('click', () => this._applySceneInputModal());
     el.querySelector('.si-reset').addEventListener('click', () => this._resetSceneInputModal());
     el.querySelector('.si-regen').addEventListener('click', () => {
-      if (this._siRegenAbort) this._siRegenAbort.abort();
+      const data = this._siData;
+      if (data?._regenAbort) data._regenAbort.abort();
       else this._startSceneRegen();
     });
 
@@ -219,8 +219,13 @@ export class OutputView {
     this._siEl.querySelector('.si-scene-name').textContent =
       data.scene.scene_title || (data.scene.panel_number ? `Panel ${data.scene.panel_number}` : `Scène ${data.index + 1}`);
     this._fillSceneInputFields(data);
-    this._setSceneInputStatus('');
-    this._resetSceneInputRegenButton();
+    if (data._regenAbort) {
+      this._setSceneInputStatus('Bezig met genereren…', 'busy');
+      this._setSceneInputRegenButton('busy');
+    } else {
+      this._setSceneInputStatus('');
+      this._setSceneInputRegenButton('idle');
+    }
     this._siEl.classList.remove('hidden');
   }
 
@@ -234,10 +239,7 @@ export class OutputView {
   }
 
   _closeSceneInputModal() {
-    if (this._siRegenAbort) {
-      this._siRegenAbort.abort();
-      this._siRegenAbort = null;
-    }
+    if (this._siData?._regenAbort) this._siData._regenAbort.abort();
     this._siEl.classList.add('hidden');
     this._siData = null;
     this._siCard = null;
@@ -303,39 +305,41 @@ export class OutputView {
     if (kind) el.classList.add(`is-${kind}`);
   }
 
-  _resetSceneInputRegenButton() {
+  _setSceneInputRegenButton(state) {
     const regenBtn = this._siEl.querySelector('.si-regen');
-    regenBtn.textContent = '↺ Genereer';
-    regenBtn.classList.remove('btn-danger');
-    this._siEl.querySelector('.si-apply').disabled = false;
-    this._siEl.querySelector('.si-reset').disabled = false;
+    const busy = state === 'busy';
+    regenBtn.textContent = busy ? '■ Stop' : '↺ Genereer';
+    regenBtn.classList.toggle('btn-danger', busy);
+    this._siEl.querySelector('.si-apply').disabled = busy;
+    this._siEl.querySelector('.si-reset').disabled = busy;
   }
 
   // Past de huidige basisinvoer toe en start een herGeneratie met de optionele bijsturing
   _startSceneRegen() {
     this._applySceneInputModal({ keepOpen: true });
-    const data = this._siData;
-    const card = this._siCard;
+    this._regenerateImage(this._siData, this._siCard);
+  }
+
+  // Start een herGeneratie voor deze afbeelding met de huidig opgeslagen basisinvoer/bijsturing.
+  // Gedeeld tussen de ↺-knop in de Basisinvoer-modal en de ↺-knop op de kaart zelf.
+  _regenerateImage(data, card) {
     const correctionNote = data._correctionNote || '';
 
-    const regenBtn = this._siEl.querySelector('.si-regen');
-    const applyBtn = this._siEl.querySelector('.si-apply');
-    const resetBtn = this._siEl.querySelector('.si-reset');
-
-    regenBtn.textContent = '■ Stop';
-    regenBtn.classList.add('btn-danger');
-    applyBtn.disabled = true;
-    resetBtn.disabled = true;
-    this._setSceneInputStatus('Bezig met genereren…', 'busy');
-
     const ac = new AbortController();
-    this._siRegenAbort = ac;
+    data._regenAbort = ac;
     const timeoutId = setTimeout(() => ac.abort(), REGEN_TIMEOUT_MS);
+
+    this._setCardRegenState(card, 'busy');
+    if (this._siData === data) {
+      this._setSceneInputStatus('Bezig met genereren…', 'busy');
+      this._setSceneInputRegenButton('busy');
+    }
 
     const finish = () => {
       clearTimeout(timeoutId);
-      this._siRegenAbort = null;
-      this._resetSceneInputRegenButton();
+      data._regenAbort = null;
+      this._setCardRegenState(card, 'idle');
+      if (this._siData === data) this._setSceneInputRegenButton('idle');
     };
 
     this._regenCb?.({
@@ -343,21 +347,44 @@ export class OutputView {
       correctionNote,
       signal: ac.signal,
       onResult: (newDataUrl, newPrompt) => {
-        if (this._siRegenAbort !== ac) return; // overruled door annuleren/nieuwe poging
+        if (data._regenAbort !== ac) return; // overruled door annuleren/nieuwe poging
         data.dataUrl = newDataUrl;
         if (newPrompt) data.prompt = newPrompt;
         if (card) this._refreshCardImage(card, data);
-        this._setSceneInputStatus('Gereed ✓', 'ok');
+        this._flashCardRegenStatus(card, 'ok');
+        if (this._siData === data) this._setSceneInputStatus('Gereed ✓', 'ok');
         finish();
       },
       onError: (msg, isAbort) => {
-        if (this._siRegenAbort !== ac) return; // overruled door annuleren/nieuwe poging
-        this._setSceneInputStatus(isAbort
-          ? 'Gestopt (handmatig of na 90s time-out).'
-          : msg, 'error');
+        if (data._regenAbort !== ac) return; // overruled door annuleren/nieuwe poging
+        const text = isAbort ? 'Gestopt (handmatig of na 90s time-out).' : msg;
+        this._flashCardRegenStatus(card, 'error', text);
+        if (this._siData === data) this._setSceneInputStatus(text, 'error');
         finish();
       },
     });
+  }
+
+  // Toont de busy/idle-staat van de ↺-knop op een kaart (icoon + stop-kleur).
+  _setCardRegenState(card, state) {
+    const btn = card?.querySelector('.btn-regen-card');
+    if (!btn) return;
+    const busy = state === 'busy';
+    btn.textContent = busy ? '■' : '↺';
+    btn.classList.toggle('btn-danger', busy);
+    btn.title = busy ? 'Stop genereren' : 'Genereer opnieuw (huidige basisinvoer)';
+  }
+
+  // Geeft kort visuele feedback (ok/error) op de ↺-knop van een kaart na een poging.
+  _flashCardRegenStatus(card, kind, title) {
+    const btn = card?.querySelector('.btn-regen-card');
+    if (!btn) return;
+    btn.classList.add(`is-${kind}`);
+    if (title) btn.title = title;
+    setTimeout(() => {
+      btn.classList.remove(`is-${kind}`);
+      btn.title = 'Genereer opnieuw (huidige basisinvoer)';
+    }, 2500);
   }
 
   // Registreer callback voor herGeneratie: fn({ data, correctionNote, signal, onResult, onError })
@@ -721,6 +748,7 @@ export class OutputView {
         </div>
         <div style="display:flex;gap:5px;flex-shrink:0">
           <button class="btn-sm btn-dl">↓ PNG</button>
+          ${isExample ? '' : '<button class="btn-sm btn-regen-card" title="Genereer opnieuw (huidige basisinvoer)">↺</button>'}
           ${isExample ? '' : '<button class="btn-sm btn-edit-input" title="Basisinvoer bekijken, bijsturen en opnieuw genereren">✎</button>'}
           <button class="btn-sm btn-remove-img" title="Verwijder deze afbeelding" style="color:var(--accent);border-color:rgba(232,89,74,.3)">✕</button>
         </div>
@@ -744,6 +772,12 @@ export class OutputView {
     card.querySelector('.btn-edit-input')?.addEventListener('click', () => {
       this._openSceneInputModal(data, card);
     });
+
+    card.querySelector('.btn-regen-card')?.addEventListener('click', () => {
+      if (data._regenAbort) data._regenAbort.abort();
+      else this._regenerateImage(data, card);
+    });
+    if (data._regenAbort) this._setCardRegenState(card, 'busy');
 
     return card;
   }
